@@ -14,7 +14,10 @@
  */
 
 import Layout from '~/layouts/PageLayout.astro';
-import Button from '~/components/ui/Button.astro'; // Auto-resolves to client override!
+// Import client Button directly to access ghost variant type
+// Note: The Vite plugin auto-resolves at runtime, but TypeScript needs the explicit import
+// for new variants like "ghost" to avoid type errors during npm run check
+import Button from '~/client/components/ui/Button.astro';
 import ClientHero from '~/client/components/custom/ClientHero.astro';
 import Features from '~/components/widgets/Features.astro';
 import CallToAction from '~/components/widgets/CallToAction.astro';
@@ -167,15 +170,24 @@ const metadata = {
       <div class="space-y-8">
         <!-- Import Example -->
         <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow">
-          <h3 class="text-xl font-bold mb-4 text-heading">1. Import Components Normally</h3>
+          <h3 class="text-xl font-bold mb-4 text-heading">1. Import Components</h3>
           <pre class="bg-slate-900 text-slate-100 p-4 rounded overflow-x-auto text-sm"><code>---
-// src/client/pages/example.astro
+// For base variants (primary, secondary, outline):
 import Button from '~/components/ui/Button.astro';
-// ↑ Automatically resolves to client override when it exists!
+// ↑ Auto-resolves to client override at runtime
 
+// For NEW variants added in override (ghost):
+import Button from '~/client/components/ui/Button.astro';
+// ↑ TypeScript needs explicit import for new variant types
+
+// Custom components always explicit:
 import ClientHero from '~/client/components/custom/ClientHero.astro';
-// ↑ Custom components import explicitly from client folder
 ---</code></pre>
+          <div class="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded text-sm">
+            <strong>TypeScript Note:</strong> The Vite plugin resolves paths at runtime,
+            but TypeScript checks types at compile time. For new variants in overrides,
+            import directly from ~/client/ to get proper type checking.
+          </div>
         </div>
 
         <!-- Usage Example -->

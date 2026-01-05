@@ -29,7 +29,7 @@ export default function clientOverridesPlugin(): Plugin {
       projectRoot = config.root;
     },
 
-    resolveId(source: string, importer: string | undefined) {
+    resolveId(source: string, _importer: string | undefined) {
       // Only process imports that match ~/components/*
       if (!source.startsWith('~/components/')) {
         return null; // Let Vite handle other imports
@@ -46,8 +46,6 @@ export default function clientOverridesPlugin(): Plugin {
       const extensions = ['', '.astro', '.ts', '.tsx', '.js', '.jsx'];
 
       for (const ext of extensions) {
-        const fullClientPath = ext ? clientPath.replace(/\.[^.]+$/, ext) : clientPath;
-
         // If we're checking without extension and the path already has one, use as-is
         if (ext === '' && path.extname(clientPath)) {
           if (fs.existsSync(clientPath)) {

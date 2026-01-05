@@ -55,11 +55,22 @@ interface Props {
 **Usage in pages/layouts:**
 ```astro
 ---
-import Button from '~/components/ui/Button.astro'; // Automatically uses client version!
+// For NEW variants added in override (e.g., ghost):
+import Button from '~/client/components/ui/Button.astro';
+// ↑ Import directly from client for TypeScript to recognize new variant types
+
+// For base variants (primary, secondary, outline):
+import Button from '~/components/ui/Button.astro';
+// ↑ Auto-resolves at runtime, works for existing variants
 ---
 
 <Button variant="ghost">Click Me</Button>
 ```
+
+**TypeScript Consideration:**
+The Vite plugin resolves imports at **runtime**, but TypeScript checks types at **compile time**.
+When you add new variants (like "ghost") in an override, TypeScript won't know about them unless
+you import directly from `~/client/components/`. For existing variants, either import works.
 
 ### Approach 2: Create Custom Components
 
