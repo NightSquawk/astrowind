@@ -9,13 +9,14 @@
 
 // For now, use environment variable as fallback
 const trackingId = import.meta.env.PUBLIC_GO_HIGH_LEVEL_TRACKING_ID;
+const scriptUrl = import.meta.env.PUBLIC_GO_HIGH_LEVEL_SCRIPT_URL;
 ---
 
-{import.meta.env.PROD && trackingId && (
+{import.meta.env.PROD && trackingId && scriptUrl && (
 	<!-- GoHighLevel External Tracking -->
 	<script
 		is:inline
-		src="https://link.nsqkt.app/js/external-tracking.js"
+		src={scriptUrl}
 		data-tracking-id={trackingId}
 	></script>
 	<!-- End GoHighLevel External Tracking -->

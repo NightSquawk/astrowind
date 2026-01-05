@@ -409,6 +409,7 @@ Create a `.env` file (see `.env.example`):
 - `PUBLIC_DATADOG_CLIENT_TOKEN` - Datadog RUM client token
 - `PUBLIC_TERMLY_CMP_WEBSITE_UUID` - Termly cookie consent UUID
 - `PUBLIC_GO_HIGH_LEVEL_TRACKING_ID` - GoHighLevel tracking ID
+- `PUBLIC_GO_HIGH_LEVEL_SCRIPT_URL` - GoHighLevel external tracking script URL
 - `MUX_TOKEN_ID` - Mux API token ID (keep secret!)
 - `MUX_TOKEN_SECRET` - Mux API token secret (keep secret!)
 
