@@ -1,0 +1,86 @@
+---
+interface Props {
+	title: string;
+	subtitle?: string;
+	image?: string;
+	imageAlt?: string;
+	class?: string;
+}
+
+const { title, subtitle, image, imageAlt, class: className = '' } = Astro.props;
+---
+
+<section class={`promo-hero ${className}`} style={image ? `--hero-image: url('${image}');` : ''}>
+	<div class="promo-hero-overlay"></div>
+	<div class="promo-hero-content">
+		<h1 class="promo-hero-title" set:html={title.replace(/\n/g, '<br>')}></h1>
+		{subtitle && <p class="promo-hero-subtitle">{subtitle}</p>}
+	</div>
+</section>
+
+<style>
+	.promo-hero {
+		position: relative;
+		width: 100%;
+		min-height: 300px;
+		background-image: var(--hero-image, linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%));
+		background-size: cover;
+		background-position: center;
+		background-repeat: no-repeat;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		text-align: center;
+		padding: var(--spacing-xl) var(--spacing-md);
+		margin-bottom: var(--spacing-xl);
+	}
+
+	.promo-hero-overlay {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
+		opacity: 0.85;
+		z-index: 0;
+	}
+
+	.promo-hero-content {
+		position: relative;
+		z-index: 1;
+		max-width: 800px;
+		margin: 0 auto;
+	}
+
+	.promo-hero-title {
+		color: var(--color-text-white);
+		font-size: 2.5rem;
+		font-weight: 700;
+		margin: 0 0 var(--spacing-md) 0;
+		text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+	}
+
+	.promo-hero-subtitle {
+		color: var(--color-text-white);
+		font-size: 1.25rem;
+		line-height: 1.6;
+		margin: 0;
+		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+	}
+
+	@media (max-width: 768px) {
+		.promo-hero {
+			min-height: 250px;
+			padding: var(--spacing-lg) var(--spacing-md);
+		}
+
+		.promo-hero-title {
+			font-size: 2rem;
+		}
+
+		.promo-hero-subtitle {
+			font-size: 1.125rem;
+		}
+	}
+</style>

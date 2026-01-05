@@ -1,0 +1,97 @@
+---
+import { getCollection } from 'astro:content';
+import PageLayout from '~/layouts/PageLayout.astro';
+import WidgetWrapper from '~/components/ui/WidgetWrapper.astro';
+import Headline from '~/components/ui/Headline.astro';
+import CampaignCard from '~/components/promo/CampaignCard.astro';
+
+const campaigns = await getCollection('campaigns');
+const now = new Date();
+// Normalize to start of day for inclusive date comparison (using local time)
+const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+// Filter active campaigns (startDate <= today <= endDate inclusive)
+const activeCampaigns = campaigns
+	.filter(campaign => {
+		// Parse dates: extract UTC components and create local dates
+		// This ensures dates from YAML (parsed as UTC) become the same date in local time
+		const startDate = new Date(
+			campaign.data.startDate.getUTCFullYear(),
+			campaign.data.startDate.getUTCMonth(),
+			campaign.data.startDate.getUTCDate()
+		);
+		startDate.setHours(0, 0, 0, 0);
+		const endDate = new Date(
+			campaign.data.endDate.getUTCFullYear(),
+			campaign.data.endDate.getUTCMonth(),
+			campaign.data.endDate.getUTCDate()
+		);
+		endDate.setHours(23, 59, 59, 999); // Include entire end date
+		
+		const isActive = startDate <= todayStart && endDate >= todayStart;
+		
+		// Debug logging in dev mode
+		if (import.meta.env.DEV) {
+			console.log(`[Campaigns] ${campaign.data.id}:`, {
+				startDateUTC: campaign.data.startDate.toISOString(),
+				startDateLocal: startDate.toLocaleString(),
+				endDateUTC: campaign.data.endDate.toISOString(),
+				endDateLocal: endDate.toLocaleString(),
+				todayStart: todayStart.toLocaleString(),
+				isActive,
+				comparison: `${startDate.getTime()} <= ${todayStart.getTime()} && ${endDate.getTime()} >= ${todayStart.getTime()} = ${isActive}`
+			});
+		}
+		
+		return isActive;
+	})
+	.sort((a, b) => b.data.startDate.getTime() - a.data.startDate.getTime());
+
+if (import.meta.env.DEV) {
+	console.log(`[Campaigns] Total campaigns: ${campaigns.length}, Active: ${activeCampaigns.length}`);
+}
+
+// TODO: Get from your site config
+const pageTitle = "Active Campaigns";
+const pageDescription = "Browse our current promotional campaigns and special offers. Save on wellness services with limited-time deals.";
+
+const structuredData = {
+	"@context": "https://schema.org",
+	"@type": "CollectionPage",
+	"name": pageTitle,
+	"description": pageDescription,
+};
+---
+
+<PageLayout metadata={{
+	title: pageTitle,
+	description: pageDescription,
+}}>
+	<WidgetWrapper id="campaigns">
+		<Headline
+			title={pageTitle}
+			subtitle="Take advantage of our current promotional campaigns and special offers. Save on wellness services with these limited-time deals."
+			classes={{
+				container: 'max-w-3xl mx-auto mb-12',
+				title: 'text-4xl md:text-5xl font-bold tracking-tighter mb-4 font-heading',
+				subtitle: 'text-xl text-muted dark:text-slate-400',
+			}}
+		/>
+
+		{activeCampaigns.length > 0 ? (
+			<div class="grid gap-6 md:gap-8 lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1 max-w-7xl mx-auto">
+				{activeCampaigns.map((campaign) => (
+					<CampaignCard campaign={campaign} />
+				))}
+			</div>
+		) : (
+			<div class="max-w-2xl mx-auto text-center p-8 md:p-12 rounded-lg shadow-xl dark:shadow-none dark:border dark:border-slate-600 bg-white dark:bg-slate-900">
+				<p class="text-xl text-muted dark:text-slate-400">
+					There are no active campaigns at this time. Check back soon for new promotions!
+				</p>
+			</div>
+		)}
+	</WidgetWrapper>
+</PageLayout>
+
+<script type="application/ld+json" set:html={JSON.stringify(structuredData)} />

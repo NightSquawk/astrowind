@@ -7,9 +7,9 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: 'var(--aw-color-primary)',
+        primary: 'var(--aw-color-primary, var(--color-primary))',
         secondary: 'var(--aw-color-secondary)',
-        accent: 'var(--aw-color-accent)',
+        accent: 'var(--aw-color-accent, var(--color-accent))',
         default: 'var(--aw-color-text-default)',
         muted: 'var(--aw-color-text-muted)',
       },

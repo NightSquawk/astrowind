@@ -1,0 +1,124 @@
+---
+import { getCollection } from 'astro:content';
+import PageLayout from '~/layouts/PageLayout.astro';
+import WidgetWrapper from '~/components/ui/WidgetWrapper.astro';
+import Headline from '~/components/ui/Headline.astro';
+import CallToAction from '~/components/widgets/CallToAction.astro';
+import Button from '~/components/ui/Button.astro';
+import { SITE } from 'astrowind:config';
+
+const episodes = await getCollection('podcast-episodes');
+const sortedEpisodes = episodes.sort((a, b) => 
+	b.data.episodeNumber - a.data.episodeNumber
+);
+
+// TODO: Get podcast name from config.podcast?.name
+const podcastName = 'Podcast';
+const pageTitle = `Podcast Episodes | ${podcastName} | ${SITE.title}`;
+const pageDescription = `Browse all episodes of ${podcastName}. Learn about health, wellness, and more.`;
+
+const structuredData = {
+	"@context": "https://schema.org",
+	"@type": "PodcastSeries",
+	"name": podcastName,
+	"description": pageDescription,
+	"author": {
+		"@type": "Person",
+		"name": SITE.title
+	},
+	"numberOfEpisodes": episodes.length
+};
+---
+
+<PageLayout metadata={{
+	title: pageTitle,
+	description: pageDescription,
+}}>
+	<WidgetWrapper id="podcast-episodes">
+		<Headline
+			title={`${podcastName} Episodes`}
+			subtitle="Browse all episodes of our podcast, where we break down complex topics into simple, actionable advice."
+			classes={{
+				container: 'max-w-3xl mx-auto mb-12',
+				title: 'text-4xl md:text-5xl font-bold tracking-tighter mb-4 font-heading',
+				subtitle: 'text-xl text-muted dark:text-slate-400',
+			}}
+		/>
+
+		<div class="grid gap-6 md:gap-8 lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1 max-w-7xl mx-auto">
+			{sortedEpisodes.map((episode) => {
+				const episodeImage = episode.data.image || episode.data.backgroundImage;
+				const formattedDate = episode.data.pubDate.toLocaleDateString('en-US', { 
+					year: 'numeric', 
+					month: 'long', 
+					day: 'numeric' 
+				});
+				
+				return (
+					<a 
+						href={`/podcast-episode/${episode.slug}`}
+						class="group relative flex flex-col h-full rounded-lg shadow-card dark:shadow-card backdrop-blur border border-card bg-white dark:bg-slate-900 overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-primary dark:hover:border-primary min-h-[500px]"
+					>
+						{episodeImage && (
+							<div
+								class="relative w-full h-64 overflow-hidden bg-slate-200 dark:bg-slate-800 bg-contain bg-center bg-no-repeat transition-transform duration-300 group-hover:scale-105"
+								style={`background-image: url('${episodeImage}');`}
+								role="img"
+								aria-label={episode.data.title}
+							/>
+						)}
+						
+						<div class="flex flex-col flex-1 p-6">
+							<div class="text-primary dark:text-blue-400 text-sm font-semibold uppercase tracking-wider mb-2">
+								Episode {episode.data.episodeNumber}
+							</div>
+							
+							<h2
+								class="text-xl font-bold text-heading mb-3 group-hover:text-primary transition-colors"
+								set:html={episode.data.title.replace(/\n/g, '<br>')}
+							/>
+							
+							<p class="text-muted dark:text-slate-400 mb-4 flex-1 line-clamp-3">
+								{episode.data.description}
+							</p>
+							
+							<div class="text-sm text-muted dark:text-slate-400 mb-4 pb-4 border-b border-slate-200 dark:border-slate-700">
+								<time datetime={episode.data.pubDate.toISOString()}>
+									{formattedDate}
+								</time>
+							</div>
+							
+							<div class="mt-auto">
+								<span class="inline-flex items-center text-sm font-semibold text-primary group-hover:translate-x-1 transition-transform">
+									Read More
+									<span class="ml-1">→</span>
+								</span>
+							</div>
+						</div>
+					</a>
+				);
+			})}
+		</div>
+	</WidgetWrapper>
+
+	<CallToAction
+		title={`Subscribe to ${podcastName}`}
+		subtitle="Don't miss an episode! Subscribe to our podcast on your favorite platform."
+		actions={[
+			{
+				variant: 'primary',
+				text: 'Watch on YouTube',
+				href: '#',
+				target: '_blank',
+			},
+			{
+				variant: 'outline',
+				text: 'Support on Patreon',
+				href: '#',
+				target: '_blank',
+			},
+		]}
+	/>
+</PageLayout>
+
+<script type="application/ld+json" set:html={JSON.stringify(structuredData)} />

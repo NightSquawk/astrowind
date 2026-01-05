@@ -1,0 +1,90 @@
+---
+import { getCollection } from 'astro:content';
+import PageLayout from '~/layouts/PageLayout.astro';
+import WidgetWrapper from '~/components/ui/WidgetWrapper.astro';
+import Headline from '~/components/ui/Headline.astro';
+import CouponCard from '~/components/promo/CouponCard.astro';
+import { getTodayPacific, getPacificDateComponents, createPacificEndOfDay } from '~/utils/date-helpers';
+
+const coupons = await getCollection('coupons');
+
+// Get today's date in Pacific timezone (start of day)
+// This returns a UTC date representing midnight Pacific time
+const todayStartPacific = getTodayPacific();
+
+// Filter active coupons (expirationDate >= today inclusive, in Pacific timezone)
+const activeCoupons = coupons
+	.filter(coupon => {
+		// Get expiration date components (treating as Pacific timezone)
+		const expComponents = getPacificDateComponents(coupon.data.expirationDate);
+		const expirationDate = createPacificEndOfDay(expComponents.year, expComponents.month, expComponents.day);
+		
+		const isActive = expirationDate >= todayStartPacific;
+		
+		// Debug logging in dev mode
+		if (import.meta.env.DEV) {
+			const expComponents = getPacificDateComponents(coupon.data.expirationDate);
+			console.log(`[Coupons] ${coupon.data.code}:`, {
+				expirationDateUTC: coupon.data.expirationDate.toISOString(),
+				expirationDatePacific: `${expComponents.month + 1}/${expComponents.day}/${expComponents.year} 11:59:59 PM`,
+				expirationDateTimestamp: expirationDate.getTime(),
+				todayStartPacific: todayStartPacific.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }),
+				todayStartPacificTimestamp: todayStartPacific.getTime(),
+				isActive,
+				comparison: `${expirationDate.getTime()} >= ${todayStartPacific.getTime()} = ${isActive}`,
+				daysUntilExpiry: Math.ceil((expirationDate.getTime() - todayStartPacific.getTime()) / (1000 * 60 * 60 * 24))
+			});
+		}
+		
+		return isActive;
+	})
+	.sort((a, b) => a.data.expirationDate.getTime() - b.data.expirationDate.getTime());
+
+if (import.meta.env.DEV) {
+	console.log(`[Coupons] Total coupons: ${coupons.length}, Active: ${activeCoupons.length}`);
+}
+
+// TODO: Get from your site config
+const pageTitle = "Available Coupons";
+const pageDescription = "Browse our current coupons and promotional offers. Save on services with these limited-time discount codes.";
+
+const structuredData = {
+	"@context": "https://schema.org",
+	"@type": "CollectionPage",
+	"name": pageTitle,
+	"description": pageDescription,
+};
+---
+
+<PageLayout metadata={{
+	title: pageTitle,
+	description: pageDescription,
+}}>
+	<WidgetWrapper id="coupons">
+		<Headline
+			title={pageTitle}
+			subtitle="Take advantage of our current promotional offers and save on services. Use these discount codes when booking your appointment."
+			classes={{
+				container: 'max-w-3xl mx-auto mb-12',
+				title: 'text-4xl md:text-5xl font-bold tracking-tighter mb-4 font-heading',
+				subtitle: 'text-xl text-muted dark:text-slate-400',
+			}}
+		/>
+
+		{activeCoupons.length > 0 ? (
+			<div class="grid gap-6 md:gap-8 lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1 max-w-7xl mx-auto">
+				{activeCoupons.map((coupon) => (
+					<CouponCard coupon={coupon} />
+				))}
+			</div>
+		) : (
+			<div class="max-w-2xl mx-auto text-center p-8 md:p-12 rounded-lg shadow-xl dark:shadow-none dark:border dark:border-slate-600 bg-white dark:bg-slate-900">
+				<p class="text-xl text-muted dark:text-slate-400">
+					There are no active coupons at this time. Check back soon for new promotions!
+				</p>
+			</div>
+		)}
+	</WidgetWrapper>
+</PageLayout>
+
+<script type="application/ld+json" set:html={JSON.stringify(structuredData)} />

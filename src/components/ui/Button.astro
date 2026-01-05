@@ -1,40 +1,98 @@
 ---
-import { Icon } from 'astro-icon/components';
-import { twMerge } from 'tailwind-merge';
-import type { CallToAction as Props } from '~/types';
+interface Props {
+	href?: string;
+	variant?: 'primary' | 'secondary' | 'outline';
+	size?: 'small' | 'medium' | 'large';
+	class?: string;
+}
 
 const {
-  variant = 'secondary',
-  target,
-  text = Astro.slots.render('default'),
-  icon = '',
-  class: className = '',
-  type,
-  ...rest
+	href,
+	variant = 'primary',
+	size = 'medium',
+	class: className = '',
 } = Astro.props;
 
-const variants = {
-  primary: 'btn-primary',
-  secondary: 'btn-secondary',
-  tertiary: 'btn btn-tertiary',
-  link: 'cursor-pointer hover:text-primary',
-};
+const baseClass = 'btn';
+const variantClass = `btn-${variant}`;
+const sizeClass = `btn-${size}`;
+const classes = `${baseClass} ${variantClass} ${sizeClass} ${className}`.trim();
 ---
 
-{
-  type === 'button' || type === 'submit' || type === 'reset' ? (
-    <button type={type} class={twMerge(variants[variant] || '', className)} {...rest}>
-      <Fragment set:html={text} />
-      {icon && <Icon name={icon} class="w-5 h-5 ml-1 -mr-1.5 rtl:mr-1 rtl:-ml-1.5 inline-block" />}
-    </button>
-  ) : (
-    <a
-      class={twMerge(variants[variant] || '', className)}
-      {...(target ? { target: target, rel: 'noopener noreferrer' } : {})}
-      {...rest}
-    >
-      <Fragment set:html={text} />
-      {icon && <Icon name={icon} class="w-5 h-5 ml-1 -mr-1.5 rtl:mr-1 rtl:-ml-1.5 inline-block" />}
-    </a>
-  )
-}
+{href ? (
+	<a href={href} class={classes}>
+		<slot />
+	</a>
+) : (
+	<button class={classes}>
+		<slot />
+	</button>
+)}
+
+<style>
+	.btn {
+		display: inline-block;
+		padding: 0.75rem 1.5rem;
+		font-size: 1rem;
+		font-weight: 600;
+		text-align: center;
+		text-decoration: none;
+		border: 2px solid transparent;
+		border-radius: 4px;
+		cursor: pointer;
+		transition: all var(--transition-base);
+		font-family: var(--font-family);
+	}
+
+	.btn-primary {
+		background-color: var(--color-accent);
+		color: var(--color-text-white);
+		border-color: var(--color-accent);
+	}
+
+	.btn-primary:hover {
+		background-color: var(--color-accent-hover);
+		border-color: var(--color-accent-hover);
+		color: var(--color-text-white);
+	}
+
+	.btn-secondary {
+		background-color: var(--color-primary);
+		color: var(--color-text-white);
+		border-color: var(--color-primary);
+	}
+
+	.btn-secondary:hover {
+		background-color: #2a4a6f;
+		border-color: #2a4a6f;
+		color: var(--color-text-white);
+	}
+
+	.btn-outline {
+		background-color: transparent;
+		color: var(--color-primary);
+		border-color: var(--color-primary);
+	}
+
+	.btn-outline:hover {
+		background-color: var(--color-primary);
+		color: var(--color-text-white);
+	}
+
+	.btn-small {
+		padding: 0.5rem 1rem;
+		font-size: 0.875rem;
+	}
+
+	.btn-large {
+		padding: 1rem 2rem;
+		font-size: 1.125rem;
+	}
+
+	@media (max-width: 768px) {
+		.btn {
+			padding: 0.625rem 1.25rem;
+			font-size: 0.9375rem;
+		}
+	}
+</style>

@@ -44,5 +44,10 @@ const { language, textDirection } = I18N;
     <slot />
 
     <BasicScripts />
+    
+    <!-- Initialize analytics event tracking -->
+    <script>
+      import '~/scripts/analytics-events';
+    </script>
   </body>
 </html>

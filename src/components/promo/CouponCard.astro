@@ -1,0 +1,86 @@
+---
+import { getTodayPacific, getPacificDateComponents, createPacificEndOfDay, formatPacificDate } from '../../utils/date-helpers';
+
+interface Props {
+	coupon: {
+		slug: string;
+		data: {
+			code: string;
+			title: string;
+			description: string;
+			discountType: 'percent' | 'fixed' | 'bogo' | 'free';
+			discountValue: number;
+			expirationDate: Date;
+			heroImage?: string;
+		};
+	};
+}
+
+const { coupon } = Astro.props;
+const couponUrl = `/coupon/${coupon.slug}`;
+
+// Check if expired (inclusive of expiration date, using Pacific timezone)
+const nowPacific = getTodayPacific();
+const todayStartPacific = new Date(nowPacific.getFullYear(), nowPacific.getMonth(), nowPacific.getDate());
+// Get expiration date components (treating as Pacific timezone)
+const expComponents = getPacificDateComponents(coupon.data.expirationDate);
+const expirationDate = createPacificEndOfDay(expComponents.year, expComponents.month, expComponents.day);
+const isExpired = expirationDate < todayStartPacific;
+
+// Format expiration date
+const formattedExpDate = (() => {
+	const expComponents = getPacificDateComponents(coupon.data.expirationDate);
+	return formatPacificDate(expComponents.year, expComponents.month, expComponents.day);
+})();
+---
+
+<a
+	href={couponUrl}
+	class="group relative flex flex-col h-full rounded-lg shadow-card dark:shadow-card backdrop-blur border border-card bg-white dark:bg-slate-900 overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-primary dark:hover:border-primary"
+	data-coupon-code={coupon.data.code}
+>
+	{coupon.data.heroImage && (
+		<div
+			class="relative w-full h-48 overflow-hidden bg-slate-200 dark:bg-slate-800 bg-cover bg-center transition-transform duration-300 group-hover:scale-105"
+			style={`background-image: url('${coupon.data.heroImage}');`}
+			role="img"
+			aria-label={coupon.data.title}
+		/>
+	)}
+	
+	<div class="flex flex-col flex-1 p-6">
+		{isExpired && (
+			<div class="flex justify-end mb-3">
+				<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-500 text-white uppercase tracking-wide">
+					Expired
+				</span>
+			</div>
+		)}
+		
+		<h3
+			class="text-xl font-bold text-heading mb-3 group-hover:text-primary transition-colors"
+			set:html={coupon.data.title.replace(/\n/g, '<br>')}
+		/>
+		
+		<p class="text-muted dark:text-slate-400 mb-4 flex-1 line-clamp-3">
+			{coupon.data.description}
+		</p>
+		
+		<div class="flex items-center gap-2 bg-slate-50 dark:bg-slate-800 px-4 py-3 rounded-lg mb-4 border-2 border-dashed border-primary">
+			<span class="text-sm font-medium text-muted dark:text-slate-400">Code:</span>
+			<span class="font-mono text-base font-bold text-primary tracking-wider">
+				{coupon.data.code}
+			</span>
+		</div>
+		
+		<div class="flex justify-between items-center pt-4 mt-auto border-t border-slate-200 dark:border-slate-700">
+			<span class="text-sm text-muted dark:text-slate-400">
+				Expires: {formattedExpDate}
+			</span>
+			<span class="text-sm font-semibold text-primary group-hover:translate-x-1 transition-transform inline-flex items-center gap-1">
+				View Details
+				<span class="text-primary">→</span>
+			</span>
+		</div>
+	</div>
+</a>

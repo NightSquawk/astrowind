@@ -1,0 +1,117 @@
+---
+interface Props {
+	campaignLinks?: Record<string, { shortUrl: string; utmParams?: Record<string, string> }>;
+	baseUrl: string;
+}
+
+const { campaignLinks, baseUrl } = Astro.props;
+
+if (!campaignLinks || Object.keys(campaignLinks).length === 0) {
+	return null;
+}
+
+// Campaign type labels and icons
+const campaignLabels: Record<string, { label: string; icon: string }> = {
+	sms: { label: 'SMS Campaign', icon: '📱' },
+	email: { label: 'Email Campaign', icon: '📧' },
+	social: { label: 'Social Media', icon: '📱' },
+	qr: { label: 'QR Code', icon: '📱' },
+};
+
+// Get full URL for each campaign link
+const getFullUrl = (shortUrl: string): string => {
+	return `${baseUrl}${shortUrl.startsWith('/') ? shortUrl : `/${shortUrl}`}`;
+};
+---
+
+{campaignLinks && Object.keys(campaignLinks).length > 0 && (
+	<div class="my-8 p-6 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+		<h3 class="text-xl font-bold text-heading mb-2">Campaign Links</h3>
+		<p class="text-muted dark:text-slate-400 mb-6 text-sm">
+			Use these specialized links for different marketing channels. Each link includes tracking parameters to measure campaign performance.
+		</p>
+		<div class="space-y-4">
+			{Object.entries(campaignLinks).map(([campaignType, link]) => {
+				const campaignInfo = campaignLabels[campaignType] || { label: campaignType, icon: '🔗' };
+				const fullUrl = getFullUrl(link.shortUrl);
+				
+				return (
+					<div class="p-4 bg-white dark:bg-slate-900 rounded-md border border-slate-200 dark:border-slate-700">
+						<div class="flex items-center gap-2 mb-3">
+							<span class="text-xl">{campaignInfo.icon}</span>
+							<h4 class="text-base font-semibold text-heading m-0">{campaignInfo.label}</h4>
+						</div>
+						<div class="flex gap-2 flex-col sm:flex-row">
+							<input 
+								type="text" 
+								class="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" 
+								value={fullUrl} 
+								readonly
+								data-campaign-type={campaignType}
+								id={`campaign-link-${campaignType}`}
+							/>
+							<button 
+								class="px-4 py-2 bg-primary text-white rounded-md font-semibold text-sm hover:bg-primary/90 transition-colors active:scale-95 whitespace-nowrap campaign-link-copy" 
+								data-copy-target={`campaign-link-${campaignType}`}
+								aria-label={`Copy ${campaignInfo.label} link`}
+							>
+								Copy
+							</button>
+						</div>
+					</div>
+				);
+			})}
+		</div>
+	</div>
+)}
+
+<style>
+	.campaign-link-copy.copied {
+		background: #10b981;
+	}
+</style>
+
+<script>
+	// Copy to clipboard functionality
+	document.addEventListener('DOMContentLoaded', () => {
+		const copyButtons = document.querySelectorAll('.campaign-link-copy');
+		
+		copyButtons.forEach(button => {
+			button.addEventListener('click', async () => {
+				const targetId = button.getAttribute('data-copy-target');
+				if (!targetId) return;
+				
+				const input = document.getElementById(targetId) as HTMLInputElement;
+				if (!input) return;
+				
+				try {
+					await navigator.clipboard.writeText(input.value);
+					
+					// Visual feedback
+					const originalText = button.textContent;
+					button.textContent = 'Copied!';
+					button.classList.add('copied');
+					
+					setTimeout(() => {
+						button.textContent = originalText;
+						button.classList.remove('copied');
+					}, 2000);
+					
+					// Track copy event
+					if (typeof gtag !== 'undefined') {
+						const campaignType = input.getAttribute('data-campaign-type');
+						gtag('event', 'campaign_link_copied', {
+							campaign_type: campaignType,
+							link_url: input.value,
+						});
+					}
+				} catch (err) {
+					console.error('Failed to copy:', err);
+					// Fallback: select text
+					input.select();
+					input.setSelectionRange(0, 99999);
+				}
+			});
+		});
+	});
+</script>

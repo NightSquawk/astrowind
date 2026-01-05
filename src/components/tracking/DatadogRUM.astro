@@ -1,0 +1,46 @@
+---
+// Datadog Real User Monitoring (RUM) Component
+// Loads in both development and production
+// Configuration from TemplateConfig or environment variables
+
+// TODO: Import your config - this is a template component
+// Example: import { config } from '~/config/site';
+// const applicationId = config.analytics?.datadogAppId;
+// const clientToken = config.analytics?.datadogClientToken;
+// const site = config.analytics?.datadogSite || 'us3.datadoghq.com';
+// const service = config.analytics?.datadogService || config.site.name;
+
+// For now, use environment variables as fallback
+const applicationId = import.meta.env.PUBLIC_DATADOG_APPLICATION_ID;
+const clientToken = import.meta.env.PUBLIC_DATADOG_CLIENT_TOKEN;
+const site = import.meta.env.PUBLIC_DATADOG_SITE || 'us3.datadoghq.com';
+const datadogEnv = import.meta.env.PUBLIC_DATADOG_ENV || (import.meta.env.DEV ? 'development' : 'production');
+const service = import.meta.env.PUBLIC_DATADOG_SERVICE || 'website';
+const version = import.meta.env.PUBLIC_DATADOG_VERSION || '1.0.0';
+---
+
+{applicationId && clientToken && (
+	<>
+		<!-- Set up configuration in a global variable -->
+		<!-- This script runs first to set up the config before the init script runs -->
+		<script define:vars={{ applicationId, clientToken, site, datadogEnv, service, version }}>
+			window.__DATADOG_CONFIG__ = {
+				applicationId: applicationId,
+				clientToken: clientToken,
+				site: site,
+				env: datadogEnv,
+				service: service,
+				version: version,
+			};
+		</script>
+
+		<!-- Import and initialize Datadog RUM -->
+		<!-- Note: Clients need to install @datadog/browser-rum package -->
+		<!-- Run: npm install @datadog/browser-rum -->
+		<script>
+			import '../../scripts/datadog-init';
+			// Import custom event tracking (will initialize after RUM is ready)
+			import '../../scripts/datadog-rum';
+		</script>
+	</>
+)}

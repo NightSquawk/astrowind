@@ -1,0 +1,43 @@
+---
+interface Props {
+	discountType: 'percent' | 'fixed' | 'bogo' | 'free';
+	discountValue: number;
+	class?: string;
+}
+
+const { discountType, discountValue, class: className = '' } = Astro.props;
+
+function formatDiscount(type: string, value: number): string {
+	switch (type) {
+		case 'percent':
+			return `${value}% OFF`;
+		case 'fixed':
+			return `$${value} OFF`;
+		case 'bogo':
+			return 'BUY ONE GET ONE';
+		case 'free':
+			return 'FREE';
+		default:
+			return `${value}% OFF`;
+	}
+}
+---
+
+<div class={`promo-badge ${className}`}>
+	{formatDiscount(discountType, discountValue)}
+</div>
+
+<style>
+	.promo-badge {
+		display: inline-block;
+		background: var(--color-accent);
+		color: var(--color-text-white);
+		font-weight: 700;
+		font-size: 1rem;
+		padding: 0.5rem 1rem;
+		border-radius: 6px;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+	}
+</style>

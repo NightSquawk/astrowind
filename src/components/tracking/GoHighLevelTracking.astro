@@ -1,0 +1,22 @@
+---
+// GoHighLevel External Tracking Component
+// Only loads in production to avoid tracking development
+// Configure via TemplateConfig.analytics.goHighLevelTrackingId
+
+// TODO: Import your config - this is a template component
+// Example: import { config } from '~/config/site';
+// const trackingId = config.analytics?.goHighLevelTrackingId;
+
+// For now, use environment variable as fallback
+const trackingId = import.meta.env.PUBLIC_GO_HIGH_LEVEL_TRACKING_ID;
+---
+
+{import.meta.env.PROD && trackingId && (
+	<!-- GoHighLevel External Tracking -->
+	<script
+		is:inline
+		src="https://link.nsqkt.app/js/external-tracking.js"
+		data-tracking-id={trackingId}
+	></script>
+	<!-- End GoHighLevel External Tracking -->
+)}

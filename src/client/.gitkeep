@@ -1,0 +1,10 @@
+# Client-specific overrides
+# 
+# This directory is for client-specific customizations:
+# - src/client/components/ - Custom components that override or extend base components
+# - src/client/layouts/ - Custom layouts
+# - src/client/pages/ - Custom pages
+# - src/client/assets/ - Client-specific assets (images, etc.)
+# - src/client/styles/ - Client-specific CSS
+#
+# These files are kept in the repository and should be customized per client.

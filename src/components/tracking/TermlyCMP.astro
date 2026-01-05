@@ -1,0 +1,29 @@
+---
+// Termly Consent Management Platform (CMP) Component
+// This script must be loaded BEFORE other tracking scripts in the <head>
+// to properly block cookies and tracking until consent is given.
+//
+// Configuration:
+// Set via TemplateConfig.analytics.termlyWebsiteUUID or environment variable
+// To get your website UUID:
+// 1. Log in to your Termly dashboard
+// 2. Navigate to Consent Management > Install
+// 3. Copy your website UUID from the script tag
+
+// TODO: Import your config - this is a template component
+// Example: import { config } from '~/config/site';
+// const termlyWebsiteUUID = config.analytics?.termlyWebsiteUUID;
+
+// For now, use environment variable as fallback
+const termlyWebsiteUUID = import.meta.env.PUBLIC_TERMLY_CMP_WEBSITE_UUID;
+---
+
+{termlyWebsiteUUID && (
+	<!-- Termly Consent Management Platform -->
+	<script
+		is:inline
+		type="text/javascript"
+		src={`https://app.termly.io/resource-blocker/${termlyWebsiteUUID}?autoBlock=on`}
+	></script>
+	<!-- End Termly CMP -->
+)}

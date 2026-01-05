@@ -1,0 +1,96 @@
+---
+import { Fragment } from 'astro/jsx-runtime';
+import { getCollection } from 'astro:content';
+import PageLayout from '~/layouts/PageLayout.astro';
+import PromoHero from '~/components/promo/PromoHero.astro';
+import SingleCoupon from '~/components/promo/SingleCoupon.astro';
+import { getTodayPacific, getPacificDateComponents, createPacificEndOfDay } from '~/utils/date-helpers';
+
+export async function getStaticPaths() {
+	const coupons = await getCollection('coupons');
+	return coupons.map((coupon) => ({
+		params: { slug: coupon.slug },
+		props: { coupon },
+	}));
+}
+
+interface Props {
+	coupon: any;
+}
+
+const { coupon } = Astro.props;
+const { Content } = await coupon.render();
+
+// Check if expired (inclusive of expiration date, using Pacific timezone)
+const nowPacific = getTodayPacific();
+const todayStartPacific = new Date(nowPacific.getFullYear(), nowPacific.getMonth(), nowPacific.getDate());
+const expComponents = getPacificDateComponents(coupon.data.expirationDate);
+const expirationDate = createPacificEndOfDay(expComponents.year, expComponents.month, expComponents.day);
+const isExpired = expirationDate < todayStartPacific;
+
+// Debug logging in dev mode
+if (import.meta.env.DEV) {
+	console.log(`[Coupon Page] ${coupon.data.code}:`, {
+		expirationDateUTC: coupon.data.expirationDate.toISOString(),
+		expirationDatePacific: expirationDate.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }),
+		todayStartPacific: todayStartPacific.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }),
+		isExpired,
+		comparison: `${expirationDate.getTime()} < ${todayStartPacific.getTime()} = ${isExpired}`
+	});
+}
+
+// TODO: Get from your site config
+const pageTitle = coupon.data.seoTitle || coupon.data.title;
+const pageDescription = coupon.data.seoDescription || coupon.data.description;
+
+const structuredData = {
+	"@context": "https://schema.org",
+	"@type": "Offer",
+	"name": coupon.data.title,
+	"description": coupon.data.description,
+	"price": coupon.data.discountType === 'free' ? '0' : undefined,
+	"priceCurrency": "USD",
+	"validFrom": new Date().toISOString(),
+	"validThrough": coupon.data.expirationDate.toISOString(),
+	"availability": isExpired ? "https://schema.org/Discontinued" : "https://schema.org/InStock",
+};
+---
+
+<PageLayout metadata={{
+	title: pageTitle,
+	description: pageDescription,
+}}>
+	<PromoHero 
+		title={coupon.data.title}
+		subtitle={coupon.data.description}
+		image={coupon.data.heroImage}
+		imageAlt={coupon.data.heroImageAlt || coupon.data.title}
+	/>
+
+	<SingleCoupon coupon={coupon} url={Astro.url}>
+		{Content ? <Content /> : <Fragment set:html={coupon.body || ''} />}
+	</SingleCoupon>
+</PageLayout>
+
+<script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+
+<script define:vars={{ 
+	couponCode: coupon.data.code, 
+	couponSlug: coupon.slug,
+	discountType: coupon.data.discountType,
+	discountValue: coupon.data.discountValue,
+	campaignId: coupon.data.campaignId || ''
+}}>
+	import { trackCouponViewed } from '../scripts/promo-analytics';
+	
+	// Track coupon view
+	if (typeof window !== 'undefined') {
+		trackCouponViewed({
+			couponCode: couponCode,
+			couponSlug: couponSlug,
+			discountType: discountType,
+			discountValue: discountValue,
+			campaignId: campaignId,
+		});
+	}
+</script>

@@ -2,7 +2,7 @@ site:
   name: AstroWind
   site: 'https://astrowind.vercel.app'
   base: '/'
-  trailingSlash: false
+  trailingSlash: ignore
 
   googleSiteVerificationId: orcPxI47GSa-cRvY11tUe6iGg2IO_RPvnA1q95iEM3M
 
@@ -70,3 +70,31 @@ analytics:
 
 ui:
   theme: 'system' # Values: "system" | "light" | "dark" | "light:only" | "dark:only"
+
+# Theme configuration - customize colors, fonts, and styling
+theme:
+  colors:
+    primary: 'rgb(1 97 239)'
+    secondary: 'rgb(1 84 207)'
+    accent: 'rgb(109 40 217)'
+    text:
+      heading: 'rgb(0 0 0)'
+      default: 'rgb(16 16 16)'
+      muted: 'rgb(16 16 16 / 66%)'
+    textDark:
+      heading: 'rgb(247, 248, 248)'
+      default: 'rgb(229 236 246)'
+      muted: 'rgb(229 236 246 / 66%)'
+    background:
+      page: 'rgb(255 255 255)'
+      pageDark: 'rgb(3 6 32)'
+  fonts:
+    sans: 'Inter Variable'
+    serif: 'Inter Variable'
+    heading: 'Inter Variable'
+  selection:
+    light:
+      background: 'lavender'
+    dark:
+      background: 'black'
+      color: 'snow'

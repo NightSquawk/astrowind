@@ -1,0 +1,102 @@
+---
+interface Props {
+	campaign: {
+		slug: string;
+		data: {
+			title: string;
+			description: string;
+			startDate: Date;
+			endDate: Date;
+			heroImage?: string;
+		};
+	};
+}
+
+const { campaign } = Astro.props;
+const campaignUrl = `/campaigns/${campaign.slug}`;
+
+// Check campaign status (inclusive of dates, using local time)
+const now = new Date();
+const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+// Parse dates: extract UTC components and create local dates
+const startDate = new Date(
+	campaign.data.startDate.getUTCFullYear(),
+	campaign.data.startDate.getUTCMonth(),
+	campaign.data.startDate.getUTCDate()
+);
+startDate.setHours(0, 0, 0, 0);
+const endDate = new Date(
+	campaign.data.endDate.getUTCFullYear(),
+	campaign.data.endDate.getUTCMonth(),
+	campaign.data.endDate.getUTCDate()
+);
+endDate.setHours(23, 59, 59, 999); // Include entire end date
+const isActive = startDate <= todayStart && endDate >= todayStart;
+const isExpired = endDate < todayStart;
+
+// Format dates
+const formattedStartDate = campaign.data.startDate.toLocaleDateString('en-US', { 
+	year: 'numeric', 
+	month: 'short', 
+	day: 'numeric' 
+});
+const formattedEndDate = campaign.data.endDate.toLocaleDateString('en-US', { 
+	year: 'numeric', 
+	month: 'short', 
+	day: 'numeric' 
+});
+---
+
+<a
+	href={campaignUrl}
+	class="group relative flex flex-col h-full rounded-lg shadow-card dark:shadow-card backdrop-blur border border-card bg-white dark:bg-slate-900 overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-primary dark:hover:border-primary"
+	data-campaign-id={campaign.slug}
+>
+	{campaign.data.heroImage && (
+		<div
+			class="relative w-full h-48 overflow-hidden bg-slate-200 dark:bg-slate-800 bg-cover bg-center transition-transform duration-300 group-hover:scale-105"
+			style={`background-image: url('${campaign.data.heroImage}');`}
+			role="img"
+			aria-label={campaign.data.title}
+		/>
+	)}
+	
+	<div class="flex flex-col flex-1 p-6">
+		<div class="mb-3">
+			{isActive && (
+				<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary text-white uppercase tracking-wide">
+					Active
+				</span>
+			)}
+			{isExpired && (
+				<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-500 text-white uppercase tracking-wide">
+					Ended
+				</span>
+			)}
+			{!isActive && !isExpired && (
+				<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-600 text-white uppercase tracking-wide">
+					Upcoming
+				</span>
+			)}
+		</div>
+		
+		<h3
+			class="text-xl font-bold text-heading mb-3 group-hover:text-primary transition-colors"
+			set:html={campaign.data.title.replace(/\n/g, '<br>')}
+		/>
+		
+		<p class="text-muted dark:text-slate-400 mb-4 flex-1 line-clamp-3">
+			{campaign.data.description}
+		</p>
+		
+		<div class="flex justify-between items-center pt-4 mt-auto border-t border-slate-200 dark:border-slate-700">
+			<span class="text-sm text-muted dark:text-slate-400">
+				{formattedStartDate} - {formattedEndDate}
+			</span>
+			<span class="text-sm font-semibold text-primary group-hover:translate-x-1 transition-transform inline-flex items-center gap-1">
+				View Campaign
+				<span class="text-primary">→</span>
+			</span>
+		</div>
+	</div>
+</a>

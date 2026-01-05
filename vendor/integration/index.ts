@@ -1,9 +1,9 @@
-import fs from 'node:fs';
-import os from 'node:os';
+import * as fs from 'node:fs';
+import * as os from 'node:os';
 import type { AstroConfig, AstroIntegration } from 'astro';
 
-import configBuilder, { type Config } from './utils/configBuilder';
-import loadConfig from './utils/loadConfig';
+import configBuilder, { type Config } from './utils/configBuilder.js';
+import loadConfig from './utils/loadConfig.js';
 
 export default ({ config: _themeConfig = 'src/config.yaml' } = {}): AstroIntegration => {
   let cfg: AstroConfig;
@@ -26,13 +26,13 @@ export default ({ config: _themeConfig = 'src/config.yaml' } = {}): AstroIntegra
         const resolvedVirtualModuleId = '\0' + virtualModuleId;
 
         const rawJsonConfig = (await loadConfig(_themeConfig)) as Config;
-        const { SITE, I18N, METADATA, APP_BLOG, UI, ANALYTICS } = configBuilder(rawJsonConfig);
+        const { SITE, I18N, METADATA, APP_BLOG, UI, ANALYTICS, THEME } = configBuilder(rawJsonConfig);
 
         updateConfig({
           site: SITE.site,
           base: SITE.base,
 
-          trailingSlash: SITE.trailingSlash ? 'always' : 'never',
+          trailingSlash: "ignore",
 
           vite: {
             plugins: [
@@ -52,6 +52,7 @@ export default ({ config: _themeConfig = 'src/config.yaml' } = {}): AstroIntegra
                     export const APP_BLOG = ${JSON.stringify(APP_BLOG)};
                     export const UI = ${JSON.stringify(UI)};
                     export const ANALYTICS = ${JSON.stringify(ANALYTICS)};
+                    export const THEME = ${JSON.stringify(THEME)};
                     `;
                   }
                 },

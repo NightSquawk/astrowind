@@ -1,0 +1,73 @@
+---
+import { Fragment } from 'astro/jsx-runtime';
+import { getCollection } from 'astro:content';
+import PageLayout from '~/layouts/PageLayout.astro';
+import PromoHero from '~/components/promo/PromoHero.astro';
+import SingleCampaign from '~/components/promo/SingleCampaign.astro';
+
+export async function getStaticPaths() {
+	const campaigns = await getCollection('campaigns');
+	return campaigns.map((campaign) => ({
+		params: { slug: campaign.slug },
+		props: { campaign },
+	}));
+}
+
+interface Props {
+	campaign: any;
+}
+
+const { campaign } = Astro.props;
+const { Content } = await campaign.render();
+
+// Get related coupons
+const allCoupons = await getCollection('coupons');
+const relatedCoupons = campaign.data.coupons
+	? allCoupons.filter(coupon => 
+		campaign.data.coupons?.includes(coupon.slug)
+	)
+	: [];
+
+// TODO: Get from your site config
+const pageTitle = campaign.data.seoTitle || campaign.data.title;
+const pageDescription = campaign.data.seoDescription || campaign.data.description;
+
+const structuredData = {
+	"@context": "https://schema.org",
+	"@type": "PromotionEvent",
+	"name": campaign.data.title,
+	"description": campaign.data.description,
+	"startDate": campaign.data.startDate.toISOString(),
+	"endDate": campaign.data.endDate.toISOString(),
+};
+---
+
+<PageLayout metadata={{
+	title: pageTitle,
+	description: pageDescription,
+}}>
+	<PromoHero 
+		title={campaign.data.title}
+		subtitle={campaign.data.description}
+		image={campaign.data.heroImage}
+		imageAlt={campaign.data.heroImageAlt || campaign.data.title}
+	/>
+
+	<SingleCampaign campaign={campaign} relatedCoupons={relatedCoupons}>
+		{Content ? <Content /> : <Fragment set:html={campaign.body || ''} />}
+	</SingleCampaign>
+</PageLayout>
+
+<script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+
+<script define:vars={{ campaignId: campaign.data.id, campaignSlug: campaign.slug }}>
+	import { trackCampaignViewed } from '../scripts/promo-analytics';
+	
+	// Track campaign view
+	if (typeof window !== 'undefined') {
+		trackCampaignViewed({
+			campaignId: campaignId,
+			campaignSlug: campaignSlug,
+		});
+	}
+</script>

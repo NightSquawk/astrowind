@@ -1,0 +1,600 @@
+---
+import { Fragment } from 'astro/jsx-runtime';
+import { getCollection } from 'astro:content';
+import PageLayout from '~/layouts/PageLayout.astro';
+import SinglePodcastEpisode from '~/components/podcast/SinglePodcastEpisode.astro';
+import { SITE } from 'astrowind:config';
+
+export async function getStaticPaths() {
+	const episodes = await getCollection('podcast-episodes');
+	return episodes.map((episode) => ({
+		params: { slug: episode.slug },
+		props: { episode },
+	}));
+}
+
+interface Props {
+	episode: any;
+}
+
+const { episode } = Astro.props;
+const { Content } = await episode.render();
+
+// Convert YouTube URL to embed format if needed
+function getYouTubeEmbedUrl(url: string | undefined): string | null {
+	if (!url) return null;
+	
+	if (url.includes('youtube.com/embed/')) {
+		return url; // Already in embed format
+	}
+	
+	if (url.includes('youtube.com/watch?v=')) {
+		const videoId = url.split('v=')[1]?.split('&')[0];
+		return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+	}
+	
+	if (url.includes('youtu.be/')) {
+		const videoId = url.split('youtu.be/')[1]?.split('?')[0];
+		return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+	}
+	
+	return url; // Return as-is if format is unknown
+}
+
+const youtubeEmbedUrl = getYouTubeEmbedUrl(episode.data.youtubeUrl);
+
+// Get all episodes for navigation
+const allEpisodes = await getCollection('podcast-episodes');
+const sortedEpisodes = allEpisodes.sort((a, b) => 
+	a.data.episodeNumber - b.data.episodeNumber
+);
+
+// Find next and previous episodes
+const currentIndex = sortedEpisodes.findIndex(e => e.slug === episode.slug);
+const nextEpisode = currentIndex < sortedEpisodes.length - 1 ? sortedEpisodes[currentIndex + 1] : null;
+const previousEpisode = currentIndex > 0 ? sortedEpisodes[currentIndex - 1] : null;
+
+// Use computed values from sorted episodes (dynamic)
+const nextEpisodeData = nextEpisode 
+	? { slug: nextEpisode.slug, title: nextEpisode.data.title }
+	: null;
+
+const previousEpisodeData = previousEpisode
+	? { slug: previousEpisode.slug, title: previousEpisode.data.title }
+	: null;
+
+// TODO: Get podcast name from config.podcast?.name
+const podcastName = 'Podcast';
+const pageTitle = episode.data.seoTitle || `${episode.data.title} | ${podcastName} | ${SITE.title}`;
+const pageDescription = episode.data.seoDescription || episode.data.description;
+
+const structuredData = {
+	"@context": "https://schema.org",
+	"@type": "PodcastEpisode",
+	"name": episode.data.title,
+	"description": episode.data.description,
+	"datePublished": episode.data.pubDate.toISOString(),
+	"episodeNumber": episode.data.episodeNumber,
+	"partOfSeries": {
+		"@type": "PodcastSeries",
+		"name": podcastName,
+		"author": {
+			"@type": "Person",
+			"name": SITE.title
+		}
+	},
+	"author": {
+		"@type": "Person",
+		"name": SITE.title
+	}
+};
+---
+
+<PageLayout metadata={{
+	title: pageTitle,
+	description: pageDescription,
+}}>
+	<section class="episode-content section">
+		<div 
+			class="episode-hero-background"
+			style={episode.data.backgroundImage 
+				? `background-image: url('${episode.data.backgroundImage}');` 
+				: ''
+			}
+		></div>
+		<div class="container">
+			<!-- Navigation Header -->
+			<div class="episode-navigation">
+                {previousEpisodeData && (
+                    <a href={`/podcast-episode/${previousEpisodeData.slug}`} class="episode-nav previous">
+                        ← Previous: {previousEpisodeData.title}
+                    </a>
+                )}
+                {nextEpisodeData && (
+                    <a href={`/podcast-episode/${nextEpisodeData.slug}`} class="episode-nav next">
+                        Next: {nextEpisodeData.title} →
+                    </a>
+                )}
+            </div>
+
+			<!-- Two Column Layout -->
+			<div class="episode-layout">
+				<!-- Main Content (70%) -->
+				<div class="episode-main">
+					<h1
+						class="episode-title"
+						set:html={episode.data.title.replace(/\n/g, '<br>')}
+					/>
+					
+					<SinglePodcastEpisode episode={episode}>
+						{Content ? <Content /> : <Fragment set:html={episode.body || ''} />}
+					</SinglePodcastEpisode>
+				</div>
+
+				<!-- Sidebar (30%) -->
+				<aside class="episode-sidebar">
+                    {episode.data.eventInfo && (
+                        <>
+                            <div class="event-card-individual">
+                                <h3 class="sidebar-section-title">📅 Date & Time</h3>
+                                <div class="event-card-content">
+                                    <p>{episode.data.eventInfo.date}</p>
+                                    <p>{episode.data.eventInfo.time}</p>
+                                </div>
+                            </div>
+                
+                            <div class="event-card-individual">
+                                <h3 class="sidebar-section-title">📍 Location</h3>
+                                <div class="event-card-content">
+                                    <p>{episode.data.eventInfo.location}</p>
+                                    <p>{episode.data.eventInfo.address}</p>
+                                </div>
+                            </div>
+                
+                            <div class="event-card-individual">
+                                <h3 class="sidebar-section-title">🎙️ Format</h3>
+                                <div class="event-card-content">
+                                    <p>{episode.data.eventInfo.format}</p>
+                                </div>
+                            </div>
+                
+                            <div class="event-card-individual">
+                                <h3 class="sidebar-section-title">📱 How to Join</h3>
+                                <div class="event-card-content">
+                                    <p>{episode.data.eventInfo.joinInstructions}</p>
+                                </div>
+                            </div>
+                        </>
+                    )}
+                
+                    {youtubeEmbedUrl && (
+                        <div class="youtube-wrapper">
+							<iframe
+								width="100%"
+								height="315"
+								src={youtubeEmbedUrl}
+								title={episode.data.title}
+								frameborder="0"
+								allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+								allowfullscreen
+							></iframe>
+						</div>
+                    )}
+                
+                    {(episode.data.spotifyUrl || episode.data.appleUrl || episode.data.amazonUrl || episode.data.deezerUrl) && (
+                        <div class="podcast-platforms">
+                            <h3 class="sidebar-section-title">Listen on Podcast Platforms</h3>
+                            <div class="podcast-links">
+                                {episode.data.spotifyUrl && (
+                                    <a href={episode.data.spotifyUrl} target="_blank" rel="noopener noreferrer" class="podcast-link spotify">
+                                        <span class="podcast-icon">🎵</span>
+                                        <span class="podcast-name">Spotify</span>
+                                        <span class="podcast-arrow">→</span>
+                                    </a>
+                                )}
+                                {episode.data.appleUrl && (
+                                    <a href={episode.data.appleUrl} target="_blank" rel="noopener noreferrer" class="podcast-link apple">
+                                        <span class="podcast-icon">🍎</span>
+                                        <span class="podcast-name">Apple Podcasts</span>
+                                        <span class="podcast-arrow">→</span>
+                                    </a>
+                                )}
+                                {episode.data.amazonUrl && (
+                                    <a href={episode.data.amazonUrl} target="_blank" rel="noopener noreferrer" class="podcast-link amazon">
+                                        <span class="podcast-icon">📦</span>
+                                        <span class="podcast-name">Amazon Music</span>
+                                        <span class="podcast-arrow">→</span>
+                                    </a>
+                                )}
+                                {episode.data.deezerUrl && (
+                                    <a href={episode.data.deezerUrl} target="_blank" rel="noopener noreferrer" class="podcast-link deezer">
+                                        <span class="podcast-icon">🎧</span>
+                                        <span class="podcast-name">Deezer</span>
+                                        <span class="podcast-arrow">→</span>
+                                    </a>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </aside>
+			</div>
+		</div>
+	</section>
+</PageLayout>
+
+<style>
+	.episode-content {
+		padding: var(--spacing-xl) 0;
+		background: var(--color-bg);
+		position: relative;
+	}
+
+	.episode-hero-background {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		width: 100vw;
+		height: 350px;
+		background-size: cover;
+		background-position: center;
+		background-repeat: no-repeat;
+		z-index: 0;
+		pointer-events: none;
+		margin-left: calc(50% - 50vw);
+		margin-right: calc(50% - 50vw);
+	}
+
+	.episode-hero-background::after {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
+		opacity: 0.4;
+		mix-blend-mode: multiply;
+	}
+
+	.episode-content .container {
+		position: relative;
+		z-index: 1;
+	}
+
+	.episode-navigation {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        justify-content: space-between;
+        gap: var(--spacing-md);
+        margin-bottom: var(--spacing-lg);
+        flex-wrap: wrap;
+    }
+
+    .episode-nav {
+        color: var(--color-primary);
+        text-decoration: none;
+        font-weight: 600;
+        padding: 0.75rem 1.25rem;
+        border-radius: 6px;
+        background: var(--color-bg-alt);
+        transition: all var(--transition-base);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        flex: 1;
+        text-align: center;
+        min-width: 200px;
+    }
+
+    .episode-nav:hover {
+        background: var(--color-accent);
+        color: var(--color-text-white);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .episode-nav.previous {
+        margin-right: auto;
+    }
+
+    .episode-nav.next {
+        margin-left: auto;
+    }
+
+	.episode-layout {
+        display: grid;
+        grid-template-columns: 70% 30%;
+        gap: var(--spacing-xl);
+        margin: var(--spacing-lg) auto;
+        align-items: start;
+        background: var(--color-bg);
+        padding: var(--spacing-xl);
+        border-radius: 8px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        box-sizing: border-box;
+        width: 100%;
+        max-width: 1400px;
+        overflow: visible;
+    }
+
+	.episode-main {
+		background: var(--color-bg);
+		min-width: 0;
+		max-width: 100%;
+		width: 100%;
+		overflow: hidden;
+		box-sizing: border-box;
+	}
+
+	.episode-title {
+		color: var(--color-primary);
+		font-size: 2.5rem;
+		margin-bottom: var(--spacing-sm);
+		font-weight: 700;
+		position: relative;
+		z-index: 2;
+		word-wrap: break-word;
+		overflow-wrap: break-word;
+		max-width: 100%;
+		box-sizing: border-box;
+	}
+
+	.episode-markdown-content {
+		font-size: 1.125rem;
+		line-height: 1.8;
+		color: var(--color-text);
+		margin-bottom: var(--spacing-xl);
+		word-wrap: break-word;
+		overflow-wrap: break-word;
+		word-break: break-word;
+		max-width: 100%;
+		width: 100%;
+		box-sizing: border-box;
+		overflow-x: hidden;
+	}
+
+	/* Markdown styling - using global selectors */
+	.episode-markdown-content :global(h1) {
+		color: var(--color-primary);
+		font-size: 2.5rem;
+		font-weight: 700;
+		margin-top: var(--spacing-xl);
+		margin-bottom: var(--spacing-md);
+		line-height: 1.2;
+	}
+
+	.episode-markdown-content :global(h2) {
+		color: var(--color-primary);
+		font-size: 2rem;
+		font-weight: 700;
+		margin-top: var(--spacing-lg);
+		margin-bottom: var(--spacing-md);
+		line-height: 1.3;
+		padding-bottom: var(--spacing-xs);
+		border-bottom: 2px solid rgba(0, 180, 180, 0.2);
+	}
+
+	.episode-markdown-content :global(h3) {
+		color: var(--color-primary);
+		font-size: 1.5rem;
+		font-weight: 600;
+		margin-top: var(--spacing-md);
+		margin-bottom: var(--spacing-sm);
+		line-height: 1.4;
+	}
+
+	.episode-markdown-content :global(p) {
+		margin-bottom: var(--spacing-md);
+		line-height: 1.8;
+		color: var(--color-text);
+	}
+
+	.episode-markdown-content :global(ul),
+	.episode-markdown-content :global(ol) {
+		margin: var(--spacing-md) 0;
+		padding-left: var(--spacing-lg);
+		line-height: 1.8;
+	}
+
+	.episode-markdown-content :global(li) {
+		margin-bottom: var(--spacing-xs);
+		line-height: 1.8;
+		color: var(--color-text);
+	}
+
+	.episode-markdown-content :global(strong),
+	.episode-markdown-content :global(b) {
+		color: var(--color-primary);
+		font-weight: 600;
+	}
+
+	.episode-markdown-content :global(a) {
+		color: var(--color-accent);
+		text-decoration: underline;
+		text-underline-offset: 2px;
+		transition: color var(--transition-base);
+	}
+
+	.episode-markdown-content :global(a:hover) {
+		color: var(--color-accent-hover);
+		text-decoration-thickness: 2px;
+	}
+
+	.episode-markdown-content :global(img) {
+		max-width: 100%;
+		width: 100%;
+		height: auto;
+		border-radius: 8px;
+		margin: var(--spacing-md) 0;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+		box-sizing: border-box;
+	}
+
+    .episode-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-sm);
+        position: sticky;
+        top: var(--spacing-md);
+        align-self: start;
+        min-width: 0;
+        max-width: 100%;
+        width: 100%;
+        overflow: hidden;
+        box-sizing: border-box;
+        padding-right: var(--spacing-md);
+        border-right: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+	.sidebar-section-title {
+        color: var(--color-primary);
+        margin-bottom: var(--spacing-sm);
+        font-size: 1.125rem;
+        font-weight: 700;
+        line-height: 1.2;
+    }
+    
+    .event-card-individual {
+		background: var(--color-bg-alt);
+		padding: var(--spacing-sm);
+		border-radius: 8px;
+		border: 1px solid rgba(0, 0, 0, 0.1);
+	}
+
+	.event-card-content {
+		color: var(--color-text);
+		line-height: 1.6;
+	}
+
+	.event-card-content p {
+		margin: 0;
+		font-size: 0.95rem;
+		color: var(--color-text-light);
+	}
+
+	.event-card-content p + p {
+		margin-top: var(--spacing-xs);
+	}
+
+	.youtube-wrapper {
+		background: var(--color-bg);
+		padding: var(--spacing-sm);
+		border-radius: 6px;
+		border: 1px solid rgba(0, 0, 0, 0.1);
+		aspect-ratio: 16 / 9;
+		position: relative;
+		overflow: hidden;
+	}
+
+	.youtube-wrapper iframe {
+		width: 100%;
+		height: 100%;
+		position: absolute;
+		top: 0;
+		left: 0;
+		border-radius: 4px;
+	}
+
+	.podcast-platforms {
+		background: transparent;
+		padding: 0;
+		border: none;
+	}
+
+	.podcast-links {
+		display: flex;
+		flex-direction: column;
+		gap: var(--spacing-xs);
+	}
+
+	.podcast-link {
+		display: flex;
+		align-items: center;
+		gap: var(--spacing-sm);
+		padding: var(--spacing-sm) var(--spacing-md);
+		background: transparent;
+		border: none;
+		border-radius: 6px;
+		text-decoration: none;
+		color: var(--color-text);
+		transition: all var(--transition-base);
+		font-weight: 500;
+	}
+
+	.podcast-link:hover {
+		background: var(--color-primary);
+		color: var(--color-text-white);
+		border-color: var(--color-primary);
+		transform: translateX(4px);
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+	}
+
+	.podcast-link.spotify:hover {
+		background: #1DB954;
+		border-color: #1DB954;
+	}
+
+	.podcast-link.apple:hover {
+		background: #FA243C;
+		border-color: #FA243C;
+	}
+
+	.podcast-link.amazon:hover {
+		background: #FF9900;
+		border-color: #FF9900;
+	}
+
+	.podcast-link.deezer:hover {
+		background: #FEAA2D;
+		border-color: #FEAA2D;
+	}
+
+	.podcast-icon {
+		font-size: 1.25rem;
+		flex-shrink: 0;
+	}
+
+	.podcast-name {
+		flex: 1;
+		font-size: 0.95rem;
+	}
+
+	.podcast-arrow {
+		font-size: 1rem;
+		opacity: 0.6;
+		transition: opacity var(--transition-base), transform var(--transition-base);
+	}
+
+	.podcast-link:hover .podcast-arrow {
+		opacity: 1;
+		transform: translateX(4px);
+	}
+
+	@media (max-width: 1024px) {
+		.episode-layout {
+			grid-template-columns: 1fr;
+			gap: var(--spacing-lg);
+			padding: var(--spacing-lg);
+		}
+
+		.episode-sidebar {
+			position: static;
+			margin-left: 0;
+			padding-left: 0;
+			border-left: none;
+		}
+	}
+
+	@media (max-width: 768px) {
+		.episode-layout {
+			padding: var(--spacing-md);
+		}
+		
+		.event-card-individual {
+			padding: var(--spacing-md);
+		}
+	}
+</style>
+
+<script type="application/ld+json" set:html={JSON.stringify(structuredData)} />

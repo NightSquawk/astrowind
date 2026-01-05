@@ -1,0 +1,222 @@
+---
+// Redirect Interstitial Page
+// This page receives redirect metadata from middleware and fires GA4 events
+// before automatically redirecting to the destination
+// Must be server-rendered to access request headers
+export const prerender = false;
+
+// Get redirect parameters from URL
+const url = Astro.url;
+const sourcePath = url.searchParams.get('source') || '';
+const destinationUrl = url.searchParams.get('dest') || '';
+const redirectType = (url.searchParams.get('type') === 'permanent' ? 'permanent' : 'temporary') as 'temporary' | 'permanent';
+const redirectCategory = url.searchParams.get('category') || undefined;
+
+// Get referrer - handle both server-side (headers) and client-side (document.referrer)
+let referrer = '';
+try {
+	referrer = Astro.request.headers.get('referer') || Astro.request.headers.get('referrer') || '';
+} catch (e) {
+	// Headers not available (shouldn't happen with prerender = false, but safe fallback)
+	referrer = '';
+}
+
+// Validate required parameters
+const isValid = sourcePath && destinationUrl;
+
+// Debug logging in development
+if (import.meta.env.DEV) {
+	console.log('[Redirect Page] Params:', {
+		sourcePath,
+		destinationUrl,
+		redirectType,
+		redirectCategory,
+		referrer,
+		isValid,
+		url: url.toString()
+	});
+}
+
+// Build full destination URL if relative
+let fullDestination = destinationUrl;
+if (!destinationUrl.startsWith('http://') && !destinationUrl.startsWith('https://')) {
+	const baseUrl = new URL(Astro.url.origin);
+	fullDestination = new URL(destinationUrl, baseUrl).toString();
+}
+
+// Parse destination URL to merge query params
+const destUrl = new URL(fullDestination);
+const destParams = new URLSearchParams(destUrl.search);
+
+// Preserve any additional query params from redirect URL (UTM params, etc.)
+// These include hardcoded UTM params from redirect config and any user-provided params
+url.searchParams.forEach((value, key) => {
+	if (!['source', 'dest', 'type', 'category'].includes(key)) {
+		// Add or override params in destination (user-provided params take precedence)
+		destParams.set(key, value);
+	}
+});
+
+// Rebuild destination URL with merged query params
+destUrl.search = destParams.toString();
+fullDestination = destUrl.toString();
+
+// Debug logging for final destination in development
+if (import.meta.env.DEV) {
+	console.log('[Redirect Page] Final destination URL:', fullDestination);
+	console.log('[Redirect Page] UTM params in destination:', Array.from(destParams.entries()).filter(([key]) => key.startsWith('utm_')));
+}
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Redirecting...</title>
+	{isValid && (
+		<>
+			<script is:inline define:vars={{ sourcePath, destinationUrl, redirectType, redirectCategory, referrer, fullDestination }}>
+				// Store variables in window for the module script to access
+				window.__REDIRECT_DATA__ = {
+					sourcePath: sourcePath,
+					destinationUrl: destinationUrl,
+					redirectType: redirectType,
+					redirectCategory: redirectCategory,
+					referrer: referrer,
+					fullDestination: fullDestination
+				};
+			</script>
+			<script type="module">
+				// Get data from window
+				const data = window.__REDIRECT_DATA__ || {};
+				const { sourcePath, destinationUrl, redirectType, redirectCategory, referrer, fullDestination } = data;
+				
+				// Check if we're in development mode
+				const isDev = window.location.hostname === 'localhost' || 
+					window.location.hostname === '127.0.0.1' || 
+					window.location.hostname.endsWith('.local');
+				
+				// Wait for gtag to be available (only in production)
+				function waitForGtag(callback, maxAttempts = 50) {
+					if (window.gtag && typeof window.gtag === 'function') {
+						callback();
+					} else if (maxAttempts > 0 && !isDev) {
+						// Only wait in production
+						setTimeout(() => waitForGtag(callback, maxAttempts - 1), 100);
+					} else {
+						// In dev mode or gtag not available, redirect immediately
+						if (isDev) {
+							console.log('[Redirect] Development mode - skipping analytics, redirecting immediately');
+						} else {
+							console.warn('[Redirect] gtag not available, redirecting without tracking');
+						}
+						
+						// Try to track anyway (will be skipped in dev by the analytics module)
+						import('../scripts/redirect-analytics').then(({ trackRedirectInitiated, storeRedirectInSession }) => {
+							trackRedirectInitiated({
+								sourcePath: sourcePath,
+								destinationUrl: destinationUrl,
+								redirectType: redirectType,
+								redirectCategory: redirectCategory,
+								referrer: referrer,
+								utmParams: new URLSearchParams(window.location.search)
+							});
+
+							storeRedirectInSession({
+								sourcePath: sourcePath,
+								destinationUrl: destinationUrl,
+								timestamp: new Date().toISOString()
+							});
+						}).catch((e) => {
+							console.warn('[Redirect] Analytics tracking failed:', e);
+						});
+						
+						// Redirect immediately
+						window.location.href = fullDestination;
+					}
+				}
+
+				// In production, wait for gtag; in dev, redirect immediately
+				if (isDev) {
+					// Development: redirect immediately, try to track (will be skipped)
+					import('../scripts/redirect-analytics').then(({ trackRedirectInitiated, storeRedirectInSession }) => {
+						trackRedirectInitiated({
+							sourcePath: sourcePath,
+							destinationUrl: destinationUrl,
+							redirectType: redirectType,
+							redirectCategory: redirectCategory,
+							referrer: referrer,
+							utmParams: new URLSearchParams(window.location.search)
+						});
+
+						storeRedirectInSession({
+							sourcePath: sourcePath,
+							destinationUrl: destinationUrl,
+							timestamp: new Date().toISOString()
+						});
+					}).catch((e) => {
+						console.warn('[Redirect] Analytics tracking failed:', e);
+					});
+					
+					// Small delay for dev mode to see the page
+					setTimeout(() => {
+						window.location.href = fullDestination;
+					}, 100);
+				} else {
+					// Production: wait for gtag, then track and redirect
+					waitForGtag(() => {
+						import('../scripts/redirect-analytics').then(({ trackRedirectInitiated, storeRedirectInSession }) => {
+							// Track redirect initiated
+							trackRedirectInitiated({
+								sourcePath: sourcePath,
+								destinationUrl: destinationUrl,
+								redirectType: redirectType,
+								redirectCategory: redirectCategory,
+								referrer: referrer,
+								utmParams: new URLSearchParams(window.location.search)
+							});
+
+							// Store in session for chain tracking
+							storeRedirectInSession({
+								sourcePath: sourcePath,
+								destinationUrl: destinationUrl,
+								timestamp: new Date().toISOString()
+							});
+
+							// Small delay to ensure event is sent, then redirect
+							setTimeout(() => {
+								window.location.href = fullDestination;
+							}, 150);
+						}).catch((e) => {
+							console.error('[Redirect] Failed to load analytics module:', e);
+							// Redirect anyway if module fails to load
+							window.location.href = fullDestination;
+						});
+					});
+				}
+			</script>
+		</>
+	)}
+	{!isValid && (
+		<script is:inline>
+			// Invalid redirect parameters, redirect to home
+			window.location.href = '/';
+		</script>
+	)}
+</head>
+<body>
+	{isValid ? (
+		<div style="text-align: center; padding: 2rem; font-family: system-ui, sans-serif;">
+			<p>Redirecting...</p>
+			<p style="font-size: 0.875rem; color: #666; margin-top: 1rem;">
+				If you are not redirected automatically, <a href={fullDestination}>click here</a>.
+			</p>
+		</div>
+	) : (
+		<div style="text-align: center; padding: 2rem; font-family: system-ui, sans-serif;">
+			<p>Invalid redirect. Redirecting to home page...</p>
+		</div>
+	)}
+</body>
+</html>

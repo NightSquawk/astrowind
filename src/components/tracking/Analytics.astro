@@ -1,0 +1,74 @@
+---
+// Google Tag Manager and Google Analytics 4 Component
+// Only loads in production to avoid tracking development
+// Configure via TemplateConfig.analytics.googleAnalyticsId and googleTagManagerId
+
+// TODO: Import your config - this is a template component
+// Example: import { config } from '~/config/site';
+// const gaId = config.analytics?.googleAnalyticsId;
+// const gtmId = config.analytics?.googleTagManagerId;
+
+// For now, use environment variables as fallback
+const gaId = import.meta.env.PUBLIC_GOOGLE_ANALYTICS_ID;
+const gtmId = import.meta.env.PUBLIC_GOOGLE_TAG_MANAGER_ID;
+---
+
+{import.meta.env.PROD && (gaId || gtmId) && (
+	<>
+		<!-- Initialize Google Consent Mode v2 BEFORE any Google scripts -->
+		<!-- This ensures consent state is set before GTM/GA scripts execute -->
+		<script is:inline set:html={`
+			window.dataLayer = window.dataLayer || [];
+			function gtag(){dataLayer.push(arguments);}
+			
+			// Initialize Google Consent Mode v2 with default 'denied' state
+			// Termly will automatically update these values when consent is given/revoked
+			gtag('consent', 'default', {
+				'ad_storage': 'denied',
+				'ad_user_data': 'denied',
+				'ad_personalization': 'denied',
+				'analytics_storage': 'denied',
+				'functionality_storage': 'denied',
+				'personalization_storage': 'denied',
+				'security_storage': 'granted',
+				'wait_for_update': 500
+			});
+		`} />
+
+		{gtmId && (
+			<>
+				<!-- Google Tag Manager -->
+				<!-- Note: GTM dynamically injects scripts, which Termly may not be able to track -->
+				<!-- Configure domain rules in Termly dashboard to properly categorize GTM scripts -->
+				<script is:inline set:html={`
+					(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+					new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+					j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+					'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+					})(window,document,'script','dataLayer','${gtmId}');
+				`} />
+				<!-- End Google Tag Manager -->
+			</>
+		)}
+
+		{gaId && (
+			<>
+				<!-- Google tag (gtag.js) -->
+				<script 
+					is:inline 
+					async 
+					src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+				></script>
+				<script is:inline set:html={`
+					gtag('js', new Date());
+					gtag('config', '${gaId}', {
+						'send_page_view': true,
+						'anonymize_ip': false,
+						'allow_google_signals': true,
+						'allow_ad_personalization_signals': true
+					});
+				`} />
+			</>
+		)}
+	</>
+)}

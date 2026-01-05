@@ -159,6 +159,42 @@ All commands are run from the root of the project, from a terminal:
 
 <br>
 
+### Multi-Client Template System
+
+**AstroWind** now includes a powerful multi-client template system that allows you to:
+
+- ✅ **Reusable Component Library** - Bootstrap-like components that work across all clients
+- ✅ **Dynamic Theme System** - Change colors, fonts, and styling via `config.yaml`
+- ✅ **Client Override System** - Override any component without modifying base template
+- ✅ **Easy Customization** - Four levels of customization from config-only to full custom code
+
+**Quick Start for New Clients:**
+1. Clone this template to your client repository
+2. Run setup script: `bash .github/scripts/setup-client.sh` (or `.ps1` on Windows)
+3. Update `src/config.yaml` with client info and theme colors
+4. Add content and customize as needed
+
+**Documentation:**
+- 📖 **Full Guide:** See `TEMPLATE_GUIDE.md` for complete documentation
+- 🚀 **Quick Start:** See `QUICK_START.md` for rapid setup
+- 🧩 **Components:** See `src/components/README.md` for component library docs
+
+**Theme Configuration:**
+All styling is controlled via `src/config.yaml`:
+
+```yaml
+theme:
+  colors:
+    primary: 'rgb(1 97 239)'      # Your brand color
+    secondary: 'rgb(1 84 207)'
+    accent: 'rgb(109 40 217)'
+  fonts:
+    sans: 'Inter Variable'
+    heading: 'Inter Variable'
+```
+
+Components automatically use these theme values - no code changes needed!
+
 ### Configuration
 
 Basic configuration file: `./src/config.yaml`

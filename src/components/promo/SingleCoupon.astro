@@ -1,0 +1,103 @@
+---
+import CouponCode from '~/components/promo/CouponCode.astro';
+import CampaignLinks from '~/components/promo/CampaignLinks.astro';
+import Button from '~/components/ui/Button.astro';
+import { formatPacificDate, getPacificDateComponents, createPacificEndOfDay, getTodayPacific } from '~/utils/date-helpers';
+
+export interface Props {
+  coupon: any;
+  url: string | URL;
+}
+
+const { coupon, url } = Astro.props;
+
+// Check if expired (inclusive of expiration date, using Pacific timezone)
+const nowPacific = getTodayPacific();
+const todayStartPacific = new Date(nowPacific.getFullYear(), nowPacific.getMonth(), nowPacific.getDate());
+const expComponents = getPacificDateComponents(coupon.data.expirationDate);
+const expirationDate = createPacificEndOfDay(expComponents.year, expComponents.month, expComponents.day);
+const isExpired = expirationDate < todayStartPacific;
+
+// Format expiration date for display
+const formattedExpDate = formatPacificDate(expComponents.year, expComponents.month, expComponents.day);
+
+// Determine destination URL based on destinationType
+let destinationUrl = `/coupon/${coupon.slug}`;
+if (coupon.data.destinationType === 'contact') {
+  destinationUrl = `/contact-us?coupon=${encodeURIComponent(coupon.data.code)}`;
+} else if (coupon.data.destinationType === 'custom' && coupon.data.ctaUrl) {
+  destinationUrl = coupon.data.ctaUrl;
+}
+---
+
+<section class="py-8 sm:py-16 lg:py-20 mx-auto">
+  {isExpired && (
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 mb-8 p-4 bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 rounded-lg text-center">
+      <p class="text-red-700 dark:text-red-400 font-semibold text-lg m-0">
+        ⚠️ This coupon has expired.
+      </p>
+    </div>
+  )}
+
+  <article>
+    <div
+      class="mx-auto px-6 sm:px-6 max-w-3xl prose prose-md lg:prose-xl dark:prose-invert dark:prose-headings:text-slate-300 prose-headings:font-heading prose-headings:leading-tighter prose-headings:tracking-tighter prose-headings:font-bold prose-a:text-primary dark:prose-a:text-blue-400 prose-img:rounded-md prose-img:shadow-lg mt-8 prose-headings:scroll-mt-[80px] prose-li:my-0"
+      id="prose-container"
+    >
+      <slot />
+      <div class="not-prose my-8" id="coupon-code-container" style="display: none;">
+        <CouponCode code={coupon.data.code} />
+      </div>
+    </div>
+
+    <script>
+      // Move coupon code to appear right after the first h1 (title)
+      (function() {
+        const proseContainer = document.getElementById('prose-container');
+        const couponContainer = document.getElementById('coupon-code-container');
+        if (proseContainer && couponContainer) {
+          const firstH1 = proseContainer.querySelector('h1');
+          if (firstH1) {
+            // Insert right after the h1
+            firstH1.after(couponContainer);
+            couponContainer.style.display = 'block';
+          } else {
+            // If no h1 found, show it at the default position
+            couponContainer.style.display = 'block';
+          }
+        }
+      })();
+    </script>
+
+    <div class="mx-auto px-6 sm:px-6 max-w-3xl">
+
+      <CampaignLinks 
+        campaignLinks={coupon.data.campaignLinks} 
+        baseUrl={url instanceof URL ? url.origin : typeof url === 'string' ? (url.startsWith('http') ? new URL(url).origin : '') : ''}
+      />
+
+      {coupon.data.applicableServices && coupon.data.applicableServices.length > 0 && (
+        <div class="my-8 p-6 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+          <h3 class="text-xl font-bold text-heading mb-4">Applicable Services</h3>
+          <ul class="space-y-2 list-none pl-0">
+            {coupon.data.applicableServices.map((service: string) => (
+              <li class="flex items-center text-muted dark:text-slate-400">
+                <span class="text-primary dark:text-blue-400 mr-2 font-bold">✓</span>
+                {service}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <div class="mt-12 pt-8 border-t border-slate-200 dark:border-slate-700 text-center">
+        <Button href={destinationUrl} variant="primary" size="large">
+          {coupon.data.ctaText || 'Book Your Appointment'}
+        </Button>
+        <p class="mt-4 text-sm text-muted dark:text-slate-400">
+          Expires: {formattedExpDate}
+        </p>
+      </div>
+    </div>
+  </article>
+</section>

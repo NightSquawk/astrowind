@@ -14,8 +14,19 @@ export const GET = async () => {
 
   const posts = await fetchPosts();
 
+  // Convert trailingSlash string to boolean for RSS plugin
+  // RSS plugin expects boolean, but config may have string values
+  let trailingSlashBoolean = true; // Default
+  if (typeof SITE.trailingSlash === 'boolean') {
+    trailingSlashBoolean = SITE.trailingSlash;
+  } else if (SITE.trailingSlash === 'never') {
+    trailingSlashBoolean = false;
+  } else if (SITE.trailingSlash === 'always') {
+    trailingSlashBoolean = true;
+  }
+
   const rss = await getRssString({
-    title: `${SITE.name}’s Blog`,
+    title: `${SITE.name}'s Blog`,
     description: METADATA?.description || '',
     site: import.meta.env.SITE,
 
@@ -26,7 +37,7 @@ export const GET = async () => {
       pubDate: post.publishDate,
     })),
 
-    trailingSlash: SITE.trailingSlash,
+    trailingSlash: trailingSlashBoolean,
   });
 
   return new Response(rss, {
