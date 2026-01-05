@@ -56,6 +56,7 @@ export default defineConfig({
       include: {
         tabler: ['*'],
         mdi: ['*'],
+        lucide: ['*'],
         'flat-color-icons': [
           'template',
           'gallery',

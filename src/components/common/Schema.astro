@@ -1,0 +1,36 @@
+---
+/**
+ * Schema Component - Renders JSON-LD structured data
+ *
+ * Usage:
+ * ```astro
+ * import Schema from '~/components/common/Schema.astro';
+ * import { createArticleSchema } from '~/utils/schema';
+ *
+ * const schema = createArticleSchema({
+ *   headline: 'My Article',
+ *   datePublished: '2024-01-01',
+ *   author: { '@type': 'Person', name: 'John Doe' },
+ *   publisher: { name: 'My Site' },
+ *   url: 'https://example.com/article',
+ * });
+ * ---
+ * <Schema schema={schema} />
+ * ```
+ */
+
+interface Props {
+  schema: Record<string, any> | Record<string, any>[];
+}
+
+const { schema } = Astro.props;
+
+// Support both single schema and array of schemas
+const schemas = Array.isArray(schema) ? schema : [schema];
+---
+
+{
+  schemas.map((s) => (
+    <script type="application/ld+json" set:html={JSON.stringify(s, null, 2)} />
+  ))
+}

@@ -1,0 +1,52 @@
+---
+/**
+ * shadcn-style Textarea Component
+ *
+ * A form textarea component with consistent styling.
+ * Based on shadcn/ui design patterns.
+ *
+ * Usage:
+ * <Textarea placeholder="Enter your message..." rows={5} />
+ */
+import { cn } from '~/utils/cn';
+
+interface Props {
+  name?: string;
+  placeholder?: string;
+  value?: string;
+  required?: boolean;
+  disabled?: boolean;
+  readonly?: boolean;
+  rows?: number;
+  class?: string;
+  id?: string;
+}
+
+const {
+  name,
+  placeholder,
+  value,
+  required,
+  disabled,
+  readonly,
+  rows = 3,
+  class: className,
+  id,
+  ...rest
+} = Astro.props;
+---
+
+<textarea
+  name={name}
+  id={id}
+  placeholder={placeholder}
+  required={required}
+  disabled={disabled}
+  readonly={readonly}
+  rows={rows}
+  class={cn(
+    'flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+    className
+  )}
+  {...rest}>{value}</textarea
+>

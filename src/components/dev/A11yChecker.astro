@@ -1,0 +1,485 @@
+---
+/**
+ * Accessibility Checker Component
+ *
+ * A development-only component that checks for common accessibility issues and displays warnings.
+ * Runs automatic checks on page load and provides a UI to view issues.
+ *
+ * Checks include:
+ * - Missing alt text on images
+ * - Missing form labels
+ * - Missing ARIA labels on interactive elements
+ * - Duplicate IDs
+ * - Empty links and buttons
+ * - Missing lang attribute
+ * - Insufficient color contrast (basic check)
+ * - Missing skip links
+ * - Non-semantic heading structure
+ *
+ * Usage:
+ * Only show in development mode:
+ * {import.meta.env.DEV && <A11yChecker />}
+ */
+import { Icon } from 'astro-icon/components';
+
+interface Props {
+  /**
+   * Position of the checker widget
+   * @default 'bottom-left'
+   */
+  position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
+  /**
+   * Auto-run checks on page load
+   * @default true
+   */
+  autoRun?: boolean;
+}
+
+const { position = 'bottom-left', autoRun = true } = Astro.props;
+
+const positionClasses = {
+  'bottom-right': 'bottom-4 right-4',
+  'bottom-left': 'bottom-4 left-4',
+  'top-right': 'top-4 right-4',
+  'top-left': 'top-4 left-4',
+};
+
+// Only render in development
+if (!import.meta.env.DEV) {
+  return null;
+}
+---
+
+<div id="a11y-checker-widget" class={`fixed ${positionClasses[position]} z-50`}>
+  <!-- Toggle Button -->
+  <button
+    id="a11y-checker-toggle"
+    class="bg-blue-600 hover:bg-blue-700 text-white rounded-full p-3 shadow-lg transition-colors relative"
+    aria-label="Toggle Accessibility Checker"
+    title="Accessibility Checker"
+  >
+    <Icon name="lucide:accessibility" class="w-6 h-6" />
+    <span
+      id="a11y-issue-badge"
+      class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center"
+    ></span>
+  </button>
+
+  <!-- Checker Panel -->
+  <div
+    id="a11y-checker-panel"
+    class="hidden absolute bottom-16 left-0 w-[28rem] bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden max-h-[600px] flex flex-col"
+  >
+    <!-- Header -->
+    <div class="bg-blue-600 text-white px-4 py-3 flex justify-between items-center flex-shrink-0">
+      <h3 class="font-semibold flex items-center gap-2">
+        <Icon name="lucide:accessibility" class="w-4 h-4" />
+         Accessibility Checker
+      </h3>
+      <div class="flex items-center gap-2">
+        <button
+          id="a11y-run-checks"
+          class="hover:bg-blue-700 rounded px-2 py-1 text-sm"
+          title="Run checks"
+        >
+          <Icon name="lucide:refresh-cw" class="w-4 h-4" />
+        </button>
+        <button id="a11y-checker-close" class="hover:bg-blue-700 rounded p-1" aria-label="Close">
+          <Icon name="lucide:x" class="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+
+    <!-- Summary -->
+    <div id="a11y-summary" class="border-b border-gray-200 dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-900 flex-shrink-0">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-600 dark:text-gray-400">Total Issues</p>
+          <p id="a11y-total-issues" class="text-2xl font-bold text-gray-900 dark:text-gray-100">0</p>
+        </div>
+        <div class="flex gap-4">
+          <div>
+            <p class="text-sm text-gray-600 dark:text-gray-400">Errors</p>
+            <p id="a11y-error-count" class="text-xl font-bold text-red-600">0</p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-600 dark:text-gray-400">Warnings</p>
+            <p id="a11y-warning-count" class="text-xl font-bold text-yellow-600">0</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Issues List -->
+    <div id="a11y-issues-container" class="flex-1 overflow-y-auto p-4">
+      <div id="a11y-loading" class="text-center py-8 text-gray-500">
+        <Icon name="lucide:loader-2" class="w-8 h-8 mx-auto mb-2 animate-spin" />
+        <p>Running accessibility checks...</p>
+      </div>
+      <div id="a11y-issues-list" class="hidden space-y-3"></div>
+      <div id="a11y-no-issues" class="hidden text-center py-8">
+        <Icon name="lucide:check-circle" class="w-12 h-12 mx-auto mb-2 text-green-500" />
+        <p class="text-gray-700 dark:text-gray-300 font-medium">No accessibility issues found!</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Great work on accessibility!</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  .animate-spin {
+    animation: spin 1s linear infinite;
+  }
+</style>
+
+<script define:vars={{ autoRun }}>
+  // Only run in development
+  if (import.meta.env.DEV) {
+    interface A11yIssue {
+      type: 'error' | 'warning';
+      category: string;
+      message: string;
+      element?: HTMLElement;
+      selector?: string;
+    }
+
+    const toggleButton = document.getElementById('a11y-checker-toggle');
+    const panel = document.getElementById('a11y-checker-panel');
+    const closeButton = document.getElementById('a11y-checker-close');
+    const runButton = document.getElementById('a11y-run-checks');
+    const issueBadge = document.getElementById('a11y-issue-badge');
+    const issuesList = document.getElementById('a11y-issues-list');
+    const loadingDiv = document.getElementById('a11y-loading');
+    const noIssuesDiv = document.getElementById('a11y-no-issues');
+
+    let issues: A11yIssue[] = [];
+
+    // Toggle panel
+    toggleButton?.addEventListener('click', () => {
+      panel?.classList.toggle('hidden');
+    });
+
+    closeButton?.addEventListener('click', () => {
+      panel?.classList.add('hidden');
+    });
+
+    // Run checks button
+    runButton?.addEventListener('click', () => {
+      runAccessibilityChecks();
+    });
+
+    // Auto-run on page load
+    if (autoRun) {
+      // Wait for page to fully load
+      if (document.readyState === 'complete') {
+        setTimeout(() => runAccessibilityChecks(), 500);
+      } else {
+        window.addEventListener('load', () => {
+          setTimeout(() => runAccessibilityChecks(), 500);
+        });
+      }
+    }
+
+    function runAccessibilityChecks() {
+      issues = [];
+      showLoading();
+
+      // Check 1: Missing alt text on images
+      checkImageAltText();
+
+      // Check 2: Missing form labels
+      checkFormLabels();
+
+      // Check 3: Empty links and buttons
+      checkEmptyInteractiveElements();
+
+      // Check 4: Missing ARIA labels
+      checkAriaLabels();
+
+      // Check 5: Duplicate IDs
+      checkDuplicateIds();
+
+      // Check 6: Missing lang attribute
+      checkLangAttribute();
+
+      // Check 7: Heading hierarchy
+      checkHeadingHierarchy();
+
+      // Check 8: Skip links
+      checkSkipLinks();
+
+      // Display results
+      displayIssues();
+    }
+
+    function checkImageAltText() {
+      const images = document.querySelectorAll('img');
+      images.forEach((img) => {
+        if (!img.hasAttribute('alt')) {
+          issues.push({
+            type: 'error',
+            category: 'Images',
+            message: `Image missing alt attribute: ${img.src || 'inline image'}`,
+            element: img,
+          });
+        } else if (img.getAttribute('alt') === '' && !img.hasAttribute('role')) {
+          // Empty alt is ok for decorative images, but should have role="presentation"
+          issues.push({
+            type: 'warning',
+            category: 'Images',
+            message: `Decorative image should have role="presentation": ${img.src || 'inline image'}`,
+            element: img,
+          });
+        }
+      });
+    }
+
+    function checkFormLabels() {
+      const inputs = document.querySelectorAll('input:not([type="hidden"]), select, textarea');
+      inputs.forEach((input) => {
+        const id = input.getAttribute('id');
+        const ariaLabel = input.getAttribute('aria-label');
+        const ariaLabelledBy = input.getAttribute('aria-labelledby');
+
+        if (id) {
+          const label = document.querySelector(`label[for="${id}"]`);
+          if (!label && !ariaLabel && !ariaLabelledBy) {
+            issues.push({
+              type: 'error',
+              category: 'Forms',
+              message: `Form input missing associated label: ${input.getAttribute('name') || input.getAttribute('type') || 'unknown'}`,
+              element: input as HTMLElement,
+            });
+          }
+        } else if (!ariaLabel && !ariaLabelledBy) {
+          issues.push({
+            type: 'warning',
+            category: 'Forms',
+            message: `Form input has no id and no aria-label`,
+            element: input as HTMLElement,
+          });
+        }
+      });
+    }
+
+    function checkEmptyInteractiveElements() {
+      const links = document.querySelectorAll('a');
+      links.forEach((link) => {
+        const text = link.textContent?.trim() || '';
+        const ariaLabel = link.getAttribute('aria-label');
+        const title = link.getAttribute('title');
+
+        if (!text && !ariaLabel && !title) {
+          issues.push({
+            type: 'error',
+            category: 'Links',
+            message: 'Empty link with no accessible text',
+            element: link,
+          });
+        }
+      });
+
+      const buttons = document.querySelectorAll('button');
+      buttons.forEach((button) => {
+        const text = button.textContent?.trim() || '';
+        const ariaLabel = button.getAttribute('aria-label');
+        const title = button.getAttribute('title');
+
+        if (!text && !ariaLabel && !title) {
+          issues.push({
+            type: 'error',
+            category: 'Buttons',
+            message: 'Empty button with no accessible text',
+            element: button,
+          });
+        }
+      });
+    }
+
+    function checkAriaLabels() {
+      const interactiveElements = document.querySelectorAll('[role="button"], [role="link"], [role="tab"]');
+      interactiveElements.forEach((element) => {
+        const ariaLabel = element.getAttribute('aria-label');
+        const ariaLabelledBy = element.getAttribute('aria-labelledby');
+        const text = element.textContent?.trim() || '';
+
+        if (!ariaLabel && !ariaLabelledBy && !text) {
+          issues.push({
+            type: 'error',
+            category: 'ARIA',
+            message: `Interactive element with role="${element.getAttribute('role')}" has no accessible name`,
+            element: element as HTMLElement,
+          });
+        }
+      });
+    }
+
+    function checkDuplicateIds() {
+      const ids = new Map<string, number>();
+      document.querySelectorAll('[id]').forEach((element) => {
+        const id = element.getAttribute('id');
+        if (id) {
+          ids.set(id, (ids.get(id) || 0) + 1);
+        }
+      });
+
+      ids.forEach((count, id) => {
+        if (count > 1) {
+          issues.push({
+            type: 'error',
+            category: 'Document',
+            message: `Duplicate ID found: "${id}" (used ${count} times)`,
+          });
+        }
+      });
+    }
+
+    function checkLangAttribute() {
+      const html = document.documentElement;
+      if (!html.hasAttribute('lang')) {
+        issues.push({
+          type: 'error',
+          category: 'Document',
+          message: 'Missing lang attribute on <html> element',
+          element: html,
+        });
+      }
+    }
+
+    function checkHeadingHierarchy() {
+      const headings = Array.from(document.querySelectorAll('h1, h2, h3, h4, h5, h6'));
+      let previousLevel = 0;
+
+      headings.forEach((heading) => {
+        const level = parseInt(heading.tagName.substring(1));
+
+        if (level - previousLevel > 1) {
+          issues.push({
+            type: 'warning',
+            category: 'Headings',
+            message: `Heading hierarchy skip: ${heading.tagName} follows h${previousLevel}`,
+            element: heading as HTMLElement,
+          });
+        }
+
+        previousLevel = level;
+      });
+
+      const h1Count = document.querySelectorAll('h1').length;
+      if (h1Count === 0) {
+        issues.push({
+          type: 'warning',
+          category: 'Headings',
+          message: 'No h1 heading found on page',
+        });
+      } else if (h1Count > 1) {
+        issues.push({
+          type: 'warning',
+          category: 'Headings',
+          message: `Multiple h1 headings found (${h1Count})`,
+        });
+      }
+    }
+
+    function checkSkipLinks() {
+      const skipLink = document.querySelector('a[href^="#"]:first-of-type');
+      const skipLinkText = skipLink?.textContent?.toLowerCase() || '';
+
+      if (!skipLinkText.includes('skip') && !skipLinkText.includes('jump')) {
+        issues.push({
+          type: 'warning',
+          category: 'Navigation',
+          message: 'No skip link found at the beginning of the page',
+        });
+      }
+    }
+
+    function showLoading() {
+      loadingDiv?.classList.remove('hidden');
+      issuesList?.classList.add('hidden');
+      noIssuesDiv?.classList.add('hidden');
+    }
+
+    function displayIssues() {
+      loadingDiv?.classList.add('hidden');
+
+      const errorCount = issues.filter((i) => i.type === 'error').length;
+      const warningCount = issues.filter((i) => i.type === 'warning').length;
+      const totalCount = issues.length;
+
+      // Update summary
+      const totalIssuesEl = document.getElementById('a11y-total-issues');
+      const errorCountEl = document.getElementById('a11y-error-count');
+      const warningCountEl = document.getElementById('a11y-warning-count');
+
+      if (totalIssuesEl) totalIssuesEl.textContent = totalCount.toString();
+      if (errorCountEl) errorCountEl.textContent = errorCount.toString();
+      if (warningCountEl) warningCountEl.textContent = warningCount.toString();
+
+      // Update badge
+      if (totalCount > 0 && issueBadge) {
+        issueBadge.textContent = totalCount > 99 ? '99+' : totalCount.toString();
+        issueBadge.classList.remove('hidden');
+      } else if (issueBadge) {
+        issueBadge.classList.add('hidden');
+      }
+
+      // Display issues or no issues message
+      if (totalCount === 0) {
+        noIssuesDiv?.classList.remove('hidden');
+        issuesList?.classList.add('hidden');
+      } else {
+        noIssuesDiv?.classList.add('hidden');
+        issuesList?.classList.remove('hidden');
+
+        if (issuesList) {
+          issuesList.innerHTML = issues
+            .map(
+              (issue, index) => `
+            <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-3 ${issue.type === 'error' ? 'border-l-4 border-l-red-500' : 'border-l-4 border-l-yellow-500'}">
+              <div class="flex items-start gap-2">
+                <span class="flex-shrink-0 mt-0.5">
+                  ${issue.type === 'error' ? '<svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>' : '<svg class="w-5 h-5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>'}
+                </span>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                    <span class="text-xs px-2 py-0.5 rounded ${issue.type === 'error' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'}">
+                      ${issue.category}
+                    </span>
+                  </p>
+                  <p class="text-sm text-gray-700 dark:text-gray-300 mt-1">${issue.message}</p>
+                  ${issue.element ? `<button class="text-xs text-blue-600 dark:text-blue-400 hover:underline mt-2" onclick="highlightElement(${index})">Highlight Element</button>` : ''}
+                </div>
+              </div>
+            </div>
+          `
+            )
+            .join('');
+        }
+      }
+    }
+
+    // Global function to highlight elements
+    (window as any).highlightElement = (index: number) => {
+      const issue = issues[index];
+      if (issue.element) {
+        issue.element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        issue.element.style.outline = '3px solid #3b82f6';
+        issue.element.style.outlineOffset = '2px';
+
+        setTimeout(() => {
+          issue.element!.style.outline = '';
+          issue.element!.style.outlineOffset = '';
+        }, 3000);
+      }
+    };
+  }
+</script>

@@ -1,0 +1,30 @@
+---
+/**
+ * shadcn-style Label Component
+ *
+ * A form label component that pairs with input fields.
+ * Based on shadcn/ui design patterns.
+ *
+ * Usage:
+ * <Label for="email">Email Address</Label>
+ * <Input type="email" id="email" />
+ */
+import { cn } from '~/utils/cn';
+
+interface Props {
+  for?: string;
+  class?: string;
+}
+
+const { for: htmlFor, class: className } = Astro.props;
+---
+
+<label
+  for={htmlFor}
+  class={cn(
+    'text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70',
+    className
+  )}
+>
+  <slot />
+</label>

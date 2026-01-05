@@ -1,0 +1,319 @@
+---
+/**
+ * Development Tools Demo Page
+ *
+ * This page demonstrates the development tools available in the template.
+ * Shows: Accessibility Checker, Open Graph Preview, and other dev utilities.
+ *
+ * NOTE: This page and all dev tools only appear in development mode.
+ * Remove or move to src/client/pages/ for production.
+ */
+import Layout from '~/layouts/Layout.astro';
+import A11yChecker from '~/components/dev/A11yChecker.astro';
+import OGPreview from '~/components/dev/OGPreview.astro';
+import Card from '~/components/ui/shadcn/Card.astro';
+import CardHeader from '~/components/ui/shadcn/CardHeader.astro';
+import CardTitle from '~/components/ui/shadcn/CardTitle.astro';
+import CardDescription from '~/components/ui/shadcn/CardDescription.astro';
+import CardContent from '~/components/ui/shadcn/CardContent.astro';
+import Badge from '~/components/ui/shadcn/Badge.astro';
+import Button from '~/components/ui/shadcn/Button.astro';
+import { Icon } from 'astro-icon/components';
+
+const metadata = {
+  title: 'Development Tools Demo',
+  description: 'Demonstration of built-in development tools for accessibility, SEO, and quality assurance',
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+
+// Sample contrast checker examples
+const contrastExamples = [
+  { bg: '#ffffff', fg: '#000000', label: 'Black on White' },
+  { bg: '#000000', fg: '#ffffff', label: 'White on Black' },
+  { bg: '#3b82f6', fg: '#ffffff', label: 'White on Blue' },
+  { bg: '#ef4444', fg: '#ffffff', label: 'White on Red' },
+  { bg: '#fef3c7', fg: '#92400e', label: 'Brown on Light Yellow' },
+  { bg: '#f3f4f6', fg: '#6b7280', label: 'Gray on Light Gray (Poor)' },
+];
+---
+
+<Layout metadata={metadata}>
+  <!-- Dev Tools -->
+  {import.meta.env.DEV && <A11yChecker />}
+  {import.meta.env.DEV && <OGPreview position="bottom-right" />}
+
+  <main class="container mx-auto px-4 py-16 space-y-16">
+    <!-- Header -->
+    <div class="max-w-4xl">
+      <Badge variant="secondary" class="mb-4">Development Only</Badge>
+      <h1 class="text-4xl font-bold mb-4">Development Tools</h1>
+      <p class="text-lg text-muted-foreground">
+        Built-in tools to help you build accessible, SEO-friendly, and high-quality websites. These tools only appear
+        in development mode and are automatically removed in production builds.
+      </p>
+    </div>
+
+    <!-- Tools Overview -->
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <Card>
+        <CardHeader>
+          <div class="flex items-center gap-2 mb-2">
+            <Icon name="lucide:accessibility" class="w-6 h-6 text-blue-600" />
+            <CardTitle>Accessibility Checker</CardTitle>
+          </div>
+          <CardDescription>Automatically scans your page for common accessibility issues</CardDescription>
+        </CardHeader>
+        <CardContent class="space-y-4">
+          <div>
+            <h4 class="font-medium mb-2">What it checks:</h4>
+            <ul class="text-sm space-y-1 text-muted-foreground">
+              <li>• Missing alt text on images</li>
+              <li>• Missing form labels</li>
+              <li>• Empty links and buttons</li>
+              <li>• Missing ARIA labels</li>
+              <li>• Duplicate IDs</li>
+              <li>• Heading hierarchy</li>
+              <li>• Document language</li>
+              <li>• Skip links</li>
+            </ul>
+          </div>
+          <Badge variant="success">Active on this page</Badge>
+          <p class="text-xs text-muted-foreground">Look for the blue accessibility icon in the bottom-left corner</p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <div class="flex items-center gap-2 mb-2">
+            <Icon name="lucide:share-2" class="w-6 h-6 text-purple-600" />
+            <CardTitle>Open Graph Preview</CardTitle>
+          </div>
+          <CardDescription>Preview how your page looks when shared on social media</CardDescription>
+        </CardHeader>
+        <CardContent class="space-y-4">
+          <div>
+            <h4 class="font-medium mb-2">Preview platforms:</h4>
+            <ul class="text-sm space-y-1 text-muted-foreground">
+              <li>• Facebook / Meta</li>
+              <li>• Twitter / X</li>
+              <li>• LinkedIn</li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="font-medium mb-2">Shows:</h4>
+            <ul class="text-sm space-y-1 text-muted-foreground">
+              <li>• Title preview</li>
+              <li>• Description preview</li>
+              <li>• Image preview</li>
+              <li>• Meta tags source</li>
+            </ul>
+          </div>
+          <Badge variant="success">Active on this page</Badge>
+          <p class="text-xs text-muted-foreground">Look for the purple share icon in the bottom-right corner</p>
+        </CardContent>
+      </Card>
+    </section>
+
+    <!-- Color Contrast Examples -->
+    <section class="space-y-6">
+      <div>
+        <h2 class="text-3xl font-bold mb-2">Color Contrast Checker</h2>
+        <p class="text-muted-foreground mb-6">
+          Test color combinations for WCAG compliance. Use the contrast utility in your code for automated checks.
+        </p>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>WCAG Standards</CardTitle>
+          <CardDescription>Understanding contrast ratio requirements</CardDescription>
+        </CardHeader>
+        <CardContent class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+              <h4 class="font-medium mb-2">Level AA (Minimum)</h4>
+              <ul class="text-sm space-y-1">
+                <li>• Normal text: <strong>4.5:1</strong> ratio</li>
+                <li>• Large text: <strong>3:1</strong> ratio</li>
+              </ul>
+            </div>
+            <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+              <h4 class="font-medium mb-2">Level AAA (Enhanced)</h4>
+              <ul class="text-sm space-y-1">
+                <li>• Normal text: <strong>7:1</strong> ratio</li>
+                <li>• Large text: <strong>4.5:1</strong> ratio</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+            <p class="text-sm">
+              <strong>Note:</strong> Large text is defined as 18.5px+ (or 14pt+) bold, or 24px+ (or 18pt+) regular.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Contrast Examples</CardTitle>
+          <CardDescription>Test different color combinations</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {
+              contrastExamples.map((example) => (
+                <div class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                  <div
+                    class="h-24 flex items-center justify-center text-lg font-medium p-4"
+                    style={`background-color: ${example.bg}; color: ${example.fg}`}
+                  >
+                    Sample Text
+                  </div>
+                  <div class="p-3 bg-gray-50 dark:bg-gray-900">
+                    <p class="text-sm font-medium">{example.label}</p>
+                    <p class="text-xs text-muted-foreground mt-1">
+                      FG: {example.fg}
+                      <br />
+                      BG: {example.bg}
+                    </p>
+                  </div>
+                </div>
+              ))
+            }
+          </div>
+        </CardContent>
+      </Card>
+    </section>
+
+    <!-- Usage Instructions -->
+    <section class="space-y-6">
+      <div>
+        <h2 class="text-3xl font-bold mb-2">Using Dev Tools</h2>
+        <p class="text-muted-foreground mb-6">How to integrate these tools into your development workflow</p>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Add to Your Pages</CardTitle>
+          <CardDescription>Include dev tools in your Astro layouts</CardDescription>
+        </CardHeader>
+        <CardContent class="space-y-4">
+          <pre
+            class="bg-muted p-4 rounded-lg overflow-x-auto text-sm"
+            ><code>{`---
+// In your layout file (e.g., src/layouts/Layout.astro)
+import A11yChecker from '~/components/dev/A11yChecker.astro';
+import OGPreview from '~/components/dev/OGPreview.astro';
+---
+
+<html>
+  <head>
+    <!-- ... -->
+  </head>
+  <body>
+    <!-- Your content -->
+
+    <!-- Dev tools (only in development) -->
+    {import.meta.env.DEV && <A11yChecker />}
+    {import.meta.env.DEV && <OGPreview />}
+  </body>
+</html>`}</code></pre>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Programmatic Contrast Checking</CardTitle>
+          <CardDescription>Use the contrast utility in your code</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <pre
+            class="bg-muted p-4 rounded-lg overflow-x-auto text-sm"
+            ><code>{`import { getContrastRatio, getWCAGCompliance } from '~/utils/contrast';
+
+// Check contrast ratio
+const ratio = getContrastRatio('#ffffff', '#000000');
+console.log(ratio); // 21 (maximum contrast)
+
+// Check WCAG compliance
+const compliance = getWCAGCompliance(ratio, 'normal');
+console.log(compliance);
+// {
+//   aa: true,
+//   aaa: true,
+//   level: 'AAA',
+//   message: 'Excellent contrast - meets WCAG AAA standards'
+// }`}</code></pre>
+        </CardContent>
+      </Card>
+
+      <div
+        class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-6"
+      >
+        <h3 class="font-semibold mb-2 flex items-center gap-2">
+          <Icon name="lucide:alert-triangle" class="w-5 h-5" />
+           Production Note
+        </h3>
+        <p class="text-sm">
+          All dev tools automatically detect <code>import.meta.env.DEV</code> and only render in development mode.
+          They will not appear in your production builds, keeping your site performant and clean.
+        </p>
+      </div>
+    </section>
+
+    <!-- Try It Out Section -->
+    <section class="space-y-6">
+      <div>
+        <h2 class="text-3xl font-bold mb-2">Try It Out</h2>
+        <p class="text-muted-foreground mb-6">Test the accessibility checker with intentional issues below</p>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Sample Issues for Testing</CardTitle>
+          <CardDescription>These elements have accessibility problems that the checker will find</CardDescription>
+        </CardHeader>
+        <CardContent class="space-y-6">
+          <!-- Missing alt text -->
+          <div>
+            <h4 class="text-sm font-medium mb-2">Image without alt text:</h4>
+            <img src="https://via.placeholder.com/150" class="rounded" />
+          </div>
+
+          <!-- Empty button -->
+          <div>
+            <h4 class="text-sm font-medium mb-2">Empty button:</h4>
+            <button class="px-4 py-2 bg-gray-200 rounded"></button>
+          </div>
+
+          <!-- Input without label -->
+          <div>
+            <h4 class="text-sm font-medium mb-2">Input without label:</h4>
+            <input type="text" class="border border-gray-300 rounded px-3 py-2" placeholder="No label" />
+          </div>
+
+          <!-- Empty link -->
+          <div>
+            <h4 class="text-sm font-medium mb-2">Empty link:</h4>
+            <a href="#" class="text-blue-600 underline"></a>
+          </div>
+
+          <Button variant="outline" class="w-full">
+            <Icon name="lucide:accessibility" class="mr-2 h-4 w-4" />
+             Click the A11y Checker to see these issues
+          </Button>
+        </CardContent>
+      </Card>
+    </section>
+  </main>
+</Layout>
+
+<style>
+  code {
+    @apply bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-sm;
+  }
+</style>

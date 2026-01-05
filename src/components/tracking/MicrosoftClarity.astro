@@ -1,0 +1,20 @@
+---
+// Microsoft Clarity Tracking Component
+// Only loads in production to avoid tracking development
+// Provides heatmaps, session recordings, and user insights
+// Get your project ID from: https://clarity.microsoft.com/
+
+const projectId = import.meta.env.PUBLIC_MICROSOFT_CLARITY_PROJECT_ID;
+---
+
+{import.meta.env.PROD && projectId && (
+	<!-- Microsoft Clarity -->
+	<script is:inline define:vars={{ projectId }}>
+		(function(c,l,a,r,i,t,y){
+			c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+			t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+			y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+		})(window, document, "clarity", "script", projectId);
+	</script>
+	<!-- End Microsoft Clarity -->
+)}

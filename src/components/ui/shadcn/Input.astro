@@ -1,0 +1,54 @@
+---
+/**
+ * shadcn-style Input Component
+ *
+ * A form input component with consistent styling.
+ * Based on shadcn/ui design patterns.
+ *
+ * Usage:
+ * <Input type="text" placeholder="Enter text..." />
+ * <Input type="email" name="email" required />
+ */
+import { cn } from '~/utils/cn';
+
+interface Props {
+  type?: string;
+  name?: string;
+  placeholder?: string;
+  value?: string;
+  required?: boolean;
+  disabled?: boolean;
+  readonly?: boolean;
+  class?: string;
+  id?: string;
+}
+
+const {
+  type = 'text',
+  name,
+  placeholder,
+  value,
+  required,
+  disabled,
+  readonly,
+  class: className,
+  id,
+  ...rest
+} = Astro.props;
+---
+
+<input
+  type={type}
+  name={name}
+  id={id}
+  placeholder={placeholder}
+  value={value}
+  required={required}
+  disabled={disabled}
+  readonly={readonly}
+  class={cn(
+    'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+    className
+  )}
+  {...rest}
+/>

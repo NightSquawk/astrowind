@@ -1,0 +1,275 @@
+---
+/**
+ * Schema Demo Page - Examples of JSON-LD structured data usage
+ * This page demonstrates how to use the schema helpers.
+ * Remove or move to src/client/pages/ for production.
+ */
+import Layout from '~/layouts/Layout.astro';
+import Schema from '~/components/common/Schema.astro';
+import {
+  createOrganizationSchema,
+  createLocalBusinessSchema,
+  createArticleSchema,
+  createProductSchema,
+  createFAQSchema,
+  createWebSiteSchema,
+  createBreadcrumbSchema,
+  createEventSchema,
+} from '~/utils/schema';
+
+// Example: Organization Schema
+const orgSchema = createOrganizationSchema({
+  name: 'Example Company',
+  url: 'https://example.com',
+  logo: 'https://example.com/logo.png',
+  description: 'We provide excellent services',
+  email: 'info@example.com',
+  telephone: '+1-555-0100',
+  address: {
+    streetAddress: '123 Main St',
+    addressLocality: 'Anytown',
+    addressRegion: 'CA',
+    postalCode: '90210',
+    addressCountry: 'US',
+  },
+  sameAs: ['https://twitter.com/example', 'https://facebook.com/example'],
+});
+
+// Example: Local Business Schema
+const businessSchema = createLocalBusinessSchema({
+  name: 'Local Coffee Shop',
+  description: 'Best coffee in town',
+  url: 'https://example.com/coffee',
+  telephone: '+1-555-0200',
+  image: 'https://example.com/shop.jpg',
+  address: {
+    streetAddress: '456 Coffee Ave',
+    addressLocality: 'Seattle',
+    addressRegion: 'WA',
+    postalCode: '98101',
+    addressCountry: 'US',
+  },
+  geo: {
+    latitude: 47.6062,
+    longitude: -122.3321,
+  },
+  openingHours: [
+    {
+      '@type': 'OpeningHoursSpecification',
+      dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+      opens: '07:00',
+      closes: '18:00',
+    },
+    {
+      '@type': 'OpeningHoursSpecification',
+      dayOfWeek: ['Saturday', 'Sunday'],
+      opens: '08:00',
+      closes: '16:00',
+    },
+  ],
+  priceRange: '$$',
+});
+
+// Example: Article Schema (for blog posts)
+const articleSchema = createArticleSchema({
+  headline: 'How to Use JSON-LD Schema',
+  description: 'A comprehensive guide to structured data',
+  image: 'https://example.com/article-image.jpg',
+  datePublished: '2024-01-15T08:00:00Z',
+  dateModified: '2024-01-20T10:30:00Z',
+  author: {
+    '@type': 'Person',
+    name: 'Jane Smith',
+    url: 'https://example.com/authors/jane-smith',
+  },
+  publisher: {
+    name: 'Example Blog',
+    logo: 'https://example.com/logo.png',
+  },
+  url: 'https://example.com/blog/json-ld-guide',
+  keywords: ['SEO', 'JSON-LD', 'Schema.org', 'Structured Data'],
+  articleSection: 'Technology',
+  wordCount: 1500,
+});
+
+// Example: Product Schema
+const productSchema = createProductSchema({
+  name: 'Premium Headphones',
+  description: 'High-quality wireless headphones with noise cancellation',
+  image: ['https://example.com/headphones-1.jpg', 'https://example.com/headphones-2.jpg'],
+  sku: 'HEAD-001',
+  brand: 'AudioPro',
+  offers: {
+    price: 299.99,
+    priceCurrency: 'USD',
+    availability: 'https://schema.org/InStock',
+    url: 'https://example.com/products/premium-headphones',
+  },
+  aggregateRating: {
+    ratingValue: 4.5,
+    reviewCount: 127,
+    bestRating: 5,
+    worstRating: 1,
+  },
+});
+
+// Example: FAQ Schema
+const faqSchema = createFAQSchema({
+  questions: [
+    {
+      question: 'What is JSON-LD?',
+      answer:
+        'JSON-LD (JavaScript Object Notation for Linked Data) is a method of encoding structured data using JSON format.',
+    },
+    {
+      question: 'Why use structured data?',
+      answer:
+        'Structured data helps search engines understand your content better, which can lead to rich snippets in search results.',
+    },
+    {
+      question: 'How do I test my structured data?',
+      answer:
+        'Use Google Rich Results Test (https://search.google.com/test/rich-results) or Schema.org validator.',
+    },
+  ],
+});
+
+// Example: WebSite Schema with SearchAction
+const websiteSchema = createWebSiteSchema({
+  name: 'Example Website',
+  url: 'https://example.com',
+  searchUrl: 'https://example.com/search?q={search_term_string}',
+});
+
+// Example: Breadcrumb Schema
+const breadcrumbSchema = createBreadcrumbSchema({
+  items: [
+    { name: 'Home', url: 'https://example.com' },
+    { name: 'Blog', url: 'https://example.com/blog' },
+    { name: 'SEO', url: 'https://example.com/blog/category/seo' },
+    { name: 'JSON-LD Guide', url: 'https://example.com/blog/json-ld-guide' },
+  ],
+});
+
+// Example: Event Schema
+const eventSchema = createEventSchema({
+  name: 'Web Development Conference 2024',
+  description: 'Annual conference for web developers',
+  startDate: '2024-06-15T09:00:00Z',
+  endDate: '2024-06-17T17:00:00Z',
+  location: {
+    name: 'Convention Center',
+    address: {
+      streetAddress: '789 Event Blvd',
+      addressLocality: 'San Francisco',
+      addressRegion: 'CA',
+      postalCode: '94102',
+      addressCountry: 'US',
+    },
+  },
+  image: 'https://example.com/conference.jpg',
+  offers: {
+    price: 499.0,
+    priceCurrency: 'USD',
+    availability: 'https://schema.org/InStock',
+    url: 'https://example.com/tickets',
+  },
+  organizer: {
+    name: 'Tech Events Inc',
+    url: 'https://example.com/organizer',
+  },
+});
+
+const metadata = {
+  title: 'Schema Demo - JSON-LD Examples',
+  description: 'Examples of using JSON-LD structured data helpers',
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+---
+
+<Layout metadata={metadata}>
+  <!-- Include all schema examples -->
+  <Schema
+    schema={[
+      orgSchema,
+      businessSchema,
+      articleSchema,
+      productSchema,
+      faqSchema,
+      websiteSchema,
+      breadcrumbSchema,
+      eventSchema,
+    ]}
+  />
+
+  <main class="container mx-auto px-4 py-16">
+    <h1 class="text-4xl font-bold mb-8">JSON-LD Schema Examples</h1>
+
+    <div class="prose max-w-4xl">
+      <p class="lead">
+        This page demonstrates various JSON-LD structured data schemas. View the page source to see the generated
+        JSON-LD scripts in the &lt;head&gt; section.
+      </p>
+
+      <h2>Available Schema Types</h2>
+      <ul>
+        <li><strong>Organization</strong> - Company/organization information</li>
+        <li><strong>LocalBusiness</strong> - Local business with location and hours</li>
+        <li><strong>Article</strong> - Blog posts and articles</li>
+        <li><strong>Product</strong> - E-commerce products with pricing and reviews</li>
+        <li><strong>FAQPage</strong> - Frequently asked questions</li>
+        <li><strong>WebSite</strong> - Website with search functionality</li>
+        <li><strong>BreadcrumbList</strong> - Navigation breadcrumbs</li>
+        <li><strong>Event</strong> - Events with dates and locations</li>
+        <li><strong>VideoObject</strong> - Video content metadata</li>
+      </ul>
+
+      <h2>Testing Your Schema</h2>
+      <p>Use these tools to validate your structured data:</p>
+      <ul>
+        <li>
+          <a href="https://search.google.com/test/rich-results" target="_blank" rel="noopener noreferrer">
+            Google Rich Results Test
+          </a>
+        </li>
+        <li>
+          <a href="https://validator.schema.org/" target="_blank" rel="noopener noreferrer">Schema.org Validator</a>
+        </li>
+      </ul>
+
+      <h2>Usage Example</h2>
+      <pre><code>{`---
+import Schema from '~/components/common/Schema.astro';
+import { createArticleSchema } from '~/utils/schema';
+
+const schema = createArticleSchema({
+  headline: 'My Article Title',
+  datePublished: '2024-01-15T08:00:00Z',
+  author: {
+    '@type': 'Person',
+    name: 'Author Name'
+  },
+  publisher: {
+    name: 'Your Site'
+  },
+  url: Astro.url.href,
+});
+---
+
+<Layout>
+  <Schema schema={schema} />
+  <!-- Your page content -->
+</Layout>`}</code></pre>
+
+      <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mt-8">
+        <p class="text-sm">
+          <strong>Note:</strong> This demo page should be removed or moved to <code>src/client/pages/</code> in production
+          to avoid exposing example data to search engines.
+        </p>
+      </div>
+    </div>
+  </main>
+</Layout>

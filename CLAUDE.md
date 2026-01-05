@@ -410,6 +410,7 @@ Create a `.env` file (see `.env.example`):
 - `PUBLIC_TERMLY_CMP_WEBSITE_UUID` - Termly cookie consent UUID
 - `PUBLIC_GO_HIGH_LEVEL_TRACKING_ID` - GoHighLevel tracking ID
 - `PUBLIC_GO_HIGH_LEVEL_SCRIPT_URL` - GoHighLevel external tracking script URL
+- `PUBLIC_MICROSOFT_CLARITY_PROJECT_ID` - Microsoft Clarity project ID for heatmaps and session recordings
 - `MUX_TOKEN_ID` - Mux API token ID (keep secret!)
 - `MUX_TOKEN_SECRET` - Mux API token secret (keep secret!)
 
@@ -473,6 +474,215 @@ The template includes `IframeEmbed` component for embedding external CRM forms.
 - Use `scriptUrl` for forms that support auto-resize
 - The component uses a loading skeleton to improve perceived performance
 - Forms are lazy-loaded by default for better page load performance
+
+## UI Component Library
+
+### Icon Libraries
+
+The template includes multiple icon libraries for flexible design options:
+
+- **Tabler Icons** (`tabler:*`) - Clean, consistent icon set with 5000+ icons
+- **Material Design Icons** (`mdi:*`) - Google's Material Design icon collection
+- **Lucide Icons** (`lucide:*`) - Modern, beautiful icons perfect for contemporary UIs
+- **Flat Color Icons** - Colorful icons for specific use cases
+
+**Usage:**
+```astro
+---
+import { Icon } from 'astro-icon/components';
+---
+
+<Icon name="lucide:heart" class="w-6 h-6" />
+<Icon name="mdi:email" class="w-5 h-5" />
+<Icon name="tabler:user" class="w-4 h-4" />
+```
+
+### shadcn-style UI Components
+
+Location: `src/components/ui/shadcn/`
+
+Modern, accessible components built with Tailwind CSS and class-variance-authority, inspired by shadcn/ui design patterns.
+
+**Available Components:**
+- **Button** - Multiple variants (default, destructive, outline, secondary, ghost, link) and sizes
+- **Card** - Flexible content container with Header, Title, Description, Content, and Footer subcomponents
+- **Badge** - Status indicators with variants (default, secondary, destructive, outline, success, warning)
+- **Input** - Form input with consistent styling
+- **Label** - Form label component
+- **Textarea** - Multi-line text input
+
+**Usage:**
+```astro
+---
+import Button from '~/components/ui/shadcn/Button.astro';
+import Card from '~/components/ui/shadcn/Card.astro';
+import CardHeader from '~/components/ui/shadcn/CardHeader.astro';
+import CardTitle from '~/components/ui/shadcn/CardTitle.astro';
+import CardContent from '~/components/ui/shadcn/CardContent.astro';
+import Badge from '~/components/ui/shadcn/Badge.astro';
+---
+
+<Card>
+  <CardHeader>
+    <CardTitle>Welcome <Badge variant="success">New</Badge></CardTitle>
+  </CardHeader>
+  <CardContent>
+    <p>Content here</p>
+    <Button variant="outline">Learn More</Button>
+  </CardContent>
+</Card>
+```
+
+**Demo:** Visit `/shadcn-demo` in development mode to see all components in action.
+
+## SEO & Structured Data
+
+### JSON-LD Schema Helpers
+
+Location: `src/utils/schema.ts` and `src/components/common/Schema.astro`
+
+Type-safe utilities for generating JSON-LD structured data to improve SEO and search result appearance.
+
+**Available Schema Types:**
+- **Organization** - Company/organization information
+- **LocalBusiness** - Local business with location, hours, contact info
+- **Article** - Blog posts and articles
+- **Product** - E-commerce products with pricing and reviews
+- **FAQPage** - Frequently asked questions
+- **WebSite** - Website with search functionality
+- **BreadcrumbList** - Navigation breadcrumbs
+- **VideoObject** - Video content metadata
+- **Event** - Events with dates and locations
+
+**Usage:**
+```astro
+---
+import Schema from '~/components/common/Schema.astro';
+import { createArticleSchema, createOrganizationSchema } from '~/utils/schema';
+
+const articleSchema = createArticleSchema({
+  headline: 'My Article Title',
+  datePublished: '2024-01-15T08:00:00Z',
+  author: { '@type': 'Person', name: 'Author Name' },
+  publisher: { name: 'Your Site', logo: 'https://example.com/logo.png' },
+  url: Astro.url.href,
+  image: 'https://example.com/article-image.jpg',
+});
+
+const orgSchema = createOrganizationSchema({
+  name: 'Your Company',
+  url: 'https://example.com',
+  logo: 'https://example.com/logo.png',
+  address: {
+    streetAddress: '123 Main St',
+    addressLocality: 'City',
+    addressRegion: 'State',
+    postalCode: '12345',
+    addressCountry: 'US',
+  },
+});
+---
+
+<Layout>
+  <Schema schema={[articleSchema, orgSchema]} />
+  <!-- Your page content -->
+</Layout>
+```
+
+**Demo:** Visit `/schema-demo` in development mode to see examples of all schema types.
+
+**Testing:** Use [Google Rich Results Test](https://search.google.com/test/rich-results) or [Schema.org Validator](https://validator.schema.org/) to validate your structured data.
+
+## Development Tools
+
+The template includes powerful development-only tools that help catch issues early and improve quality. These tools automatically detect `import.meta.env.DEV` and only render in development mode.
+
+### Accessibility Checker
+
+Location: `src/components/dev/A11yChecker.astro`
+
+Automatically scans your page for common accessibility issues and displays warnings in a convenient UI.
+
+**What it checks:**
+- Missing alt text on images
+- Missing form labels and ARIA labels
+- Empty links and buttons
+- Duplicate IDs
+- Missing lang attribute
+- Heading hierarchy issues
+- Skip link presence
+- Basic accessibility violations
+
+**Usage:**
+```astro
+---
+import A11yChecker from '~/components/dev/A11yChecker.astro';
+---
+
+<Layout>
+  <!-- Your content -->
+
+  {import.meta.env.DEV && <A11yChecker />}
+</Layout>
+```
+
+### Open Graph Preview
+
+Location: `src/components/dev/OGPreview.astro`
+
+Preview how your page will look when shared on social media platforms (Facebook, Twitter, LinkedIn).
+
+**Features:**
+- Real-time preview of OG meta tags
+- Platform-specific previews (Facebook, Twitter, LinkedIn)
+- View source meta tags
+- Image preview
+- Automatic detection of title, description, image, and URL
+
+**Usage:**
+```astro
+---
+import OGPreview from '~/components/dev/OGPreview.astro';
+---
+
+<Layout>
+  <!-- Your content -->
+
+  {import.meta.env.DEV && <OGPreview position="bottom-right" />}
+</Layout>
+```
+
+### Color Contrast Checker
+
+Location: `src/utils/contrast.ts`
+
+Utilities for checking color contrast ratios against WCAG 2.1 standards (AA and AAA levels).
+
+**Features:**
+- Calculate contrast ratios between colors
+- Check WCAG compliance (AA/AAA)
+- Support for normal and large text
+- Parse multiple color formats (hex, rgb, rgba)
+
+**Usage:**
+```typescript
+import { getContrastRatio, getWCAGCompliance } from '~/utils/contrast';
+
+// Check contrast ratio
+const ratio = getContrastRatio('#ffffff', '#000000');
+console.log(ratio); // 21 (maximum contrast)
+
+// Check WCAG compliance
+const compliance = getWCAGCompliance(ratio, 'normal');
+// Returns: { aa: true, aaa: true, level: 'AAA', message: '...' }
+```
+
+**Standards:**
+- **Level AA (Minimum):** Normal text 4.5:1, Large text 3:1
+- **Level AAA (Enhanced):** Normal text 7:1, Large text 4.5:1
+- Large text: 18.5px+ bold or 24px+ regular
+
+**Demo:** Visit `/dev-tools-demo` in development mode to see all dev tools in action.
 
 ## Best Practices
 

@@ -1,0 +1,266 @@
+---
+/**
+ * shadcn-style Components Demo Page
+ * This page demonstrates the shadcn-style UI components.
+ * Remove or move to src/client/pages/ for production.
+ */
+import Layout from '~/layouts/Layout.astro';
+import Button from '~/components/ui/shadcn/Button.astro';
+import Card from '~/components/ui/shadcn/Card.astro';
+import CardHeader from '~/components/ui/shadcn/CardHeader.astro';
+import CardTitle from '~/components/ui/shadcn/CardTitle.astro';
+import CardDescription from '~/components/ui/shadcn/CardDescription.astro';
+import CardContent from '~/components/ui/shadcn/CardContent.astro';
+import CardFooter from '~/components/ui/shadcn/CardFooter.astro';
+import Badge from '~/components/ui/shadcn/Badge.astro';
+import Input from '~/components/ui/shadcn/Input.astro';
+import Label from '~/components/ui/shadcn/Label.astro';
+import Textarea from '~/components/ui/shadcn/Textarea.astro';
+import { Icon } from 'astro-icon/components';
+
+const metadata = {
+  title: 'shadcn-style Components Demo',
+  description: 'Demo of shadcn-style UI components for the template',
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+---
+
+<Layout metadata={metadata}>
+  <main class="container mx-auto px-4 py-16 space-y-16">
+    <div class="max-w-4xl">
+      <h1 class="text-4xl font-bold mb-4">shadcn-style UI Components</h1>
+      <p class="text-lg text-muted-foreground">
+        Modern, accessible, and customizable components built with Tailwind CSS and inspired by shadcn/ui.
+      </p>
+    </div>
+
+    <!-- Button Components -->
+    <section class="space-y-6">
+      <div>
+        <h2 class="text-3xl font-bold mb-2">Buttons</h2>
+        <p class="text-muted-foreground mb-6">Various button styles and sizes</p>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <h3 class="text-xl font-semibold mb-3">Variants</h3>
+          <div class="flex flex-wrap gap-4">
+            <Button variant="default">Default</Button>
+            <Button variant="destructive">Destructive</Button>
+            <Button variant="outline">Outline</Button>
+            <Button variant="secondary">Secondary</Button>
+            <Button variant="ghost">Ghost</Button>
+            <Button variant="link">Link</Button>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3">Sizes</h3>
+          <div class="flex flex-wrap items-center gap-4">
+            <Button size="sm">Small</Button>
+            <Button size="default">Default</Button>
+            <Button size="lg">Large</Button>
+            <Button size="icon">
+              <Icon name="lucide:heart" class="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3">With Icons</h3>
+          <div class="flex flex-wrap gap-4">
+            <Button>
+              <Icon name="lucide:mail" class="mr-2 h-4 w-4" />
+               Send Email
+            </Button>
+            <Button variant="outline">
+              <Icon name="lucide:download" class="mr-2 h-4 w-4" />
+               Download
+            </Button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Badge Components -->
+    <section class="space-y-6">
+      <div>
+        <h2 class="text-3xl font-bold mb-2">Badges</h2>
+        <p class="text-muted-foreground mb-6">Status indicators and labels</p>
+      </div>
+
+      <div class="flex flex-wrap gap-4">
+        <Badge variant="default">Default</Badge>
+        <Badge variant="secondary">Secondary</Badge>
+        <Badge variant="destructive">Destructive</Badge>
+        <Badge variant="outline">Outline</Badge>
+        <Badge variant="success">Success</Badge>
+        <Badge variant="warning">Warning</Badge>
+      </div>
+    </section>
+
+    <!-- Card Components -->
+    <section class="space-y-6">
+      <div>
+        <h2 class="text-3xl font-bold mb-2">Cards</h2>
+        <p class="text-muted-foreground mb-6">Flexible content containers</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Simple Card</CardTitle>
+            <CardDescription>This is a basic card with header and content</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p>Card content goes here. This is where you would add your main content.</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Card with Footer</CardTitle>
+            <CardDescription>This card includes a footer with actions</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p>This card demonstrates the full card structure with all sections.</p>
+          </CardContent>
+          <CardFooter>
+            <Button variant="outline" class="mr-2">Cancel</Button>
+            <Button>Save</Button>
+          </CardFooter>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Product Card</CardTitle>
+            <CardDescription>Premium Headphones</CardDescription>
+          </CardHeader>
+          <CardContent class="space-y-2">
+            <div class="aspect-video bg-muted rounded-md flex items-center justify-center">
+              <Icon name="lucide:headphones" class="h-12 w-12 text-muted-foreground" />
+            </div>
+            <p class="text-2xl font-bold">$299.99</p>
+            <div class="flex gap-2">
+              <Badge variant="success">In Stock</Badge>
+              <Badge variant="secondary">Free Shipping</Badge>
+            </div>
+          </CardContent>
+          <CardFooter>
+            <Button class="w-full">Add to Cart</Button>
+          </CardFooter>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Statistics</CardTitle>
+            <CardDescription>Monthly overview</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div class="space-y-4">
+              <div class="flex justify-between items-center">
+                <span class="text-sm font-medium">Total Revenue</span>
+                <Badge variant="success">+12%</Badge>
+              </div>
+              <p class="text-3xl font-bold">$45,231</p>
+              <p class="text-sm text-muted-foreground">Compared to last month</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </section>
+
+    <!-- Form Components -->
+    <section class="space-y-6">
+      <div>
+        <h2 class="text-3xl font-bold mb-2">Form Components</h2>
+        <p class="text-muted-foreground mb-6">Input fields and form elements</p>
+      </div>
+
+      <Card class="max-w-2xl">
+        <CardHeader>
+          <CardTitle>Contact Form</CardTitle>
+          <CardDescription>Fill out the form below and we'll get back to you</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form class="space-y-4">
+            <div class="space-y-2">
+              <Label for="name">Full Name</Label>
+              <Input type="text" id="name" name="name" placeholder="John Doe" />
+            </div>
+
+            <div class="space-y-2">
+              <Label for="email">Email Address</Label>
+              <Input type="email" id="email" name="email" placeholder="john@example.com" />
+            </div>
+
+            <div class="space-y-2">
+              <Label for="subject">Subject</Label>
+              <Input type="text" id="subject" name="subject" placeholder="How can we help?" />
+            </div>
+
+            <div class="space-y-2">
+              <Label for="message">Message</Label>
+              <Textarea id="message" name="message" placeholder="Tell us more..." rows={5} />
+            </div>
+          </form>
+        </CardContent>
+        <CardFooter>
+          <Button type="submit" class="w-full">
+            <Icon name="lucide:send" class="mr-2 h-4 w-4" />
+             Send Message
+          </Button>
+        </CardFooter>
+      </Card>
+    </section>
+
+    <!-- Usage Example -->
+    <section class="space-y-6">
+      <div>
+        <h2 class="text-3xl font-bold mb-2">Usage</h2>
+        <p class="text-muted-foreground mb-6">How to use these components in your pages</p>
+      </div>
+
+      <Card class="max-w-4xl">
+        <CardHeader>
+          <CardTitle>Import Components</CardTitle>
+          <CardDescription>Import shadcn-style components in your Astro pages</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <pre
+            class="bg-muted p-4 rounded-lg overflow-x-auto text-sm"
+            ><code>{`---
+import Button from '~/components/ui/shadcn/Button.astro';
+import Card from '~/components/ui/shadcn/Card.astro';
+import Badge from '~/components/ui/shadcn/Badge.astro';
+import Input from '~/components/ui/shadcn/Input.astro';
+---
+
+<Card>
+  <CardHeader>
+    <CardTitle>Welcome</CardTitle>
+  </CardHeader>
+  <CardContent>
+    <p>Content here</p>
+  </CardContent>
+  <CardFooter>
+    <Button>Action</Button>
+  </CardFooter>
+</Card>`}</code></pre>
+        </CardContent>
+      </Card>
+
+      <div
+        class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4"
+      >
+        <p class="text-sm">
+          <strong>Note:</strong> This demo page should be removed or moved to <code>src/client/pages/</code> in production.
+          The components are ready to use in your client projects.
+        </p>
+      </div>
+    </section>
+  </main>
+</Layout>

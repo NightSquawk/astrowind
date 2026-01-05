@@ -1,0 +1,71 @@
+---
+/**
+ * shadcn-style Button Component
+ *
+ * A modern button component with variants and sizes using Tailwind CSS.
+ * Based on shadcn/ui design patterns.
+ *
+ * Usage:
+ * <Button>Click me</Button>
+ * <Button variant="destructive" size="lg">Delete</Button>
+ * <Button variant="outline" size="sm" href="/link">Link Button</Button>
+ */
+import { cva, type VariantProps } from 'class-variance-authority';
+import { cn } from '~/utils/cn';
+
+const buttonVariants = cva(
+  'inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
+  {
+    variants: {
+      variant: {
+        default: 'bg-primary text-white hover:bg-primary/90 focus-visible:ring-primary',
+        destructive: 'bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-600',
+        outline:
+          'border-2 border-primary bg-transparent text-primary hover:bg-primary hover:text-white focus-visible:ring-primary',
+        secondary: 'bg-secondary text-white hover:bg-secondary/90 focus-visible:ring-secondary',
+        ghost: 'hover:bg-accent/10 hover:text-accent-foreground focus-visible:ring-accent',
+        link: 'text-primary underline-offset-4 hover:underline focus-visible:ring-primary',
+      },
+      size: {
+        default: 'h-10 px-4 py-2',
+        sm: 'h-9 rounded-md px-3 text-xs',
+        lg: 'h-11 rounded-md px-8',
+        icon: 'h-10 w-10',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
+      size: 'default',
+    },
+  }
+);
+
+type ButtonVariants = VariantProps<typeof buttonVariants>;
+
+interface Props extends ButtonVariants {
+  href?: string;
+  type?: 'button' | 'submit' | 'reset';
+  disabled?: boolean;
+  class?: string;
+  target?: string;
+  rel?: string;
+}
+
+const { variant, size, href, type = 'button', disabled, class: className, target, rel, ...rest } = Astro.props;
+
+const classes = cn(buttonVariants({ variant, size }), className);
+
+const Element = href ? 'a' : 'button';
+---
+
+<Element
+  class={classes}
+  href={href}
+  type={!href ? type : undefined}
+  disabled={!href ? disabled : undefined}
+  target={target}
+  rel={rel}
+  {...rest}
+>
+  <slot />
+</Element>
