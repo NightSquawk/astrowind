@@ -1,0 +1,303 @@
+---
+/**
+ * EXAMPLE PAGE: Testing Component Overrides
+ *
+ * This page demonstrates the auto-override system in action:
+ * - Button component with ghost variant (from client override)
+ * - ClientHero custom component (from client/components/custom/)
+ * - All imports use standard paths - plugin handles resolution automatically
+ *
+ * NOTE: Pages always go in src/pages/ (not src/client/pages/)
+ *       Only components go in src/client/components/ for overrides
+ *
+ * Access this page at: http://localhost:4321/example
+ */
+
+import Layout from '~/layouts/PageLayout.astro';
+import Button from '~/components/ui/Button.astro'; // Auto-resolves to client override!
+import ClientHero from '~/client/components/custom/ClientHero.astro';
+import Features from '~/components/widgets/Features.astro';
+import CallToAction from '~/components/widgets/CallToAction.astro';
+
+const metadata = {
+  title: 'Client Override Example Page',
+  description: 'Demonstrates the auto-override system with custom components and overridden base components.',
+  robots: {
+    index: false, // Don't index example page
+    follow: false,
+  },
+};
+---
+
+<Layout metadata={metadata}>
+  <!-- Custom Hero Component from client/components/custom/ -->
+  <ClientHero
+    title="Welcome to the Override Example"
+    subtitle="This page demonstrates the component override system"
+    tagline="Client Customization"
+    primaryAction={{
+      text: "Get Started",
+      href: "#features"
+    }}
+    secondaryAction={{
+      text: "Learn More",
+      href: "#buttons"
+    }}
+  />
+
+  <!-- Button Examples Section -->
+  <section id="buttons" class="px-4 py-16 mx-auto max-w-7xl sm:px-6 lg:px-8 lg:py-20">
+    <div class="mb-12 text-center">
+      <h2 class="text-4xl md:text-5xl font-bold leading-tighter tracking-tighter mb-4 font-heading">
+        Button Override Example
+      </h2>
+      <p class="text-xl text-muted">
+        The Button component now includes a "ghost" variant from our client override
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+      <!-- Base Variants -->
+      <div class="bg-white dark:bg-slate-900 p-8 rounded-lg shadow-lg">
+        <h3 class="text-2xl font-bold mb-6 text-heading">Base Variants</h3>
+        <div class="space-y-4">
+          <div>
+            <p class="text-sm text-muted mb-2">Primary Button:</p>
+            <Button variant="primary" href="#test">
+              Primary Action
+            </Button>
+          </div>
+          <div>
+            <p class="text-sm text-muted mb-2">Secondary Button:</p>
+            <Button variant="secondary" href="#test">
+              Secondary Action
+            </Button>
+          </div>
+          <div>
+            <p class="text-sm text-muted mb-2">Outline Button:</p>
+            <Button variant="outline" href="#test">
+              Outline Action
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <!-- New Ghost Variant (from override) -->
+      <div class="bg-white dark:bg-slate-900 p-8 rounded-lg shadow-lg border-2 border-accent">
+        <h3 class="text-2xl font-bold mb-6 text-heading">
+          New Ghost Variant ✨
+        </h3>
+        <div class="space-y-4">
+          <div>
+            <p class="text-sm text-muted mb-2">Ghost Button (New!):</p>
+            <Button variant="ghost" href="#test">
+              Ghost Action
+            </Button>
+          </div>
+          <div class="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded">
+            <p class="text-sm">
+              <strong>Note:</strong> This "ghost" variant is added via the client override at
+              <code class="text-xs bg-slate-200 dark:bg-slate-700 px-1 py-0.5 rounded">
+                src/client/components/ui/Button.astro
+              </code>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Size Examples -->
+    <div class="mt-12 text-center">
+      <h3 class="text-2xl font-bold mb-6 text-heading">Different Sizes</h3>
+      <div class="flex flex-wrap gap-4 justify-center items-end">
+        <Button variant="primary" size="small">Small</Button>
+        <Button variant="primary" size="medium">Medium (Default)</Button>
+        <Button variant="primary" size="large">Large</Button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section (using base component) -->
+  <Features
+    id="features"
+    title="How the Override System Works"
+    subtitle="Understanding the auto-override plugin"
+    items={[
+      {
+        title: 'Automatic Resolution',
+        description: 'The Vite plugin checks for client versions and automatically uses them when importing components.',
+        icon: 'tabler:check',
+      },
+      {
+        title: 'No Import Changes',
+        description: 'Import from ~/components/* as usual. The plugin handles finding client overrides automatically.',
+        icon: 'tabler:code',
+      },
+      {
+        title: 'Fallback to Base',
+        description: 'If no client override exists, the import automatically falls back to the base component.',
+        icon: 'tabler:arrow-back',
+      },
+      {
+        title: 'Easy to Extend',
+        description: 'Add new variants or modify behavior while preserving all base functionality.',
+        icon: 'tabler:puzzle',
+      },
+      {
+        title: 'Theme Integration',
+        description: 'All overrides use the same CSS variables and theme configuration as base components.',
+        icon: 'tabler:palette',
+      },
+      {
+        title: 'Build Tested',
+        description: 'The override system is fully integrated with the build process and works in production.',
+        icon: 'tabler:rocket',
+      },
+    ]}
+    columns={3}
+  />
+
+  <!-- Code Example Section -->
+  <section class="px-4 py-16 mx-auto max-w-7xl sm:px-6 lg:px-8 lg:py-20 bg-slate-50 dark:bg-slate-900">
+    <div class="max-w-4xl mx-auto">
+      <h2 class="text-4xl md:text-5xl font-bold leading-tighter tracking-tighter mb-8 font-heading text-center">
+        Code Examples
+      </h2>
+
+      <div class="space-y-8">
+        <!-- Import Example -->
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow">
+          <h3 class="text-xl font-bold mb-4 text-heading">1. Import Components Normally</h3>
+          <pre class="bg-slate-900 text-slate-100 p-4 rounded overflow-x-auto text-sm"><code>---
+// src/client/pages/example.astro
+import Button from '~/components/ui/Button.astro';
+// ↑ Automatically resolves to client override when it exists!
+
+import ClientHero from '~/client/components/custom/ClientHero.astro';
+// ↑ Custom components import explicitly from client folder
+---</code></pre>
+        </div>
+
+        <!-- Usage Example -->
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow">
+          <h3 class="text-xl font-bold mb-4 text-heading">2. Use New Variants</h3>
+          <pre class="bg-slate-900 text-slate-100 p-4 rounded overflow-x-auto text-sm"><code>&lt;Button variant="ghost" size="large"&gt;
+  Ghost Button
+&lt;/Button&gt;
+
+&lt;ClientHero
+  title="Welcome"
+  primaryAction=&#123;&#123; text: "Start", href: "/start" &#125;&#125;
+/&gt;</code></pre>
+        </div>
+
+        <!-- Override Creation -->
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow">
+          <h3 class="text-xl font-bold mb-4 text-heading">3. Create Your Own Override</h3>
+          <pre class="bg-slate-900 text-slate-100 p-4 rounded overflow-x-auto text-sm"><code>// 1. Copy base component structure
+// 2. Add to: src/client/components/ui/YourComponent.astro
+// 3. Modify as needed
+// 4. Import normally - it just works!
+
+import YourComponent from '~/components/ui/YourComponent.astro';
+// ↑ Auto-uses client version</code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Call to Action -->
+  <CallToAction
+    title="Ready to Customize?"
+    subtitle="Create your own component overrides and custom components"
+    actions={[
+      {
+        variant: 'primary',
+        text: 'View Documentation',
+        href: '/client/components/README.md',
+      },
+      {
+        variant: 'ghost',
+        text: 'Back to Home',
+        href: '/',
+      },
+    ]}
+  />
+
+  <!-- Technical Details Section -->
+  <section class="px-4 py-16 mx-auto max-w-7xl sm:px-6 lg:px-8 lg:py-20">
+    <div class="max-w-3xl mx-auto">
+      <h2 class="text-3xl md:text-4xl font-bold leading-tighter tracking-tighter mb-8 font-heading text-center">
+        Technical Implementation
+      </h2>
+
+      <div class="prose prose-lg dark:prose-invert max-w-none">
+        <h3>How It Works</h3>
+        <ol class="space-y-4">
+          <li>
+            <strong>Vite Plugin:</strong> The plugin at
+            <code>vendor/integration/vite-plugin-client-overrides.ts</code> intercepts module resolution
+          </li>
+          <li>
+            <strong>Path Checking:</strong> When you import <code>~/components/ui/Button.astro</code>,
+            it checks if <code>src/client/components/ui/Button.astro</code> exists
+          </li>
+          <li>
+            <strong>Smart Resolution:</strong> If client version exists, import resolves there.
+            Otherwise, it uses the base component
+          </li>
+          <li>
+            <strong>Zero Config:</strong> No changes needed to existing code. Just drop in overrides and they work!
+          </li>
+        </ol>
+
+        <h3>Files in This Example</h3>
+        <ul class="space-y-2">
+          <li>
+            <code>src/pages/example.astro</code> - This page (pages always go in src/pages/)
+          </li>
+          <li>
+            <code>src/client/components/ui/Button.astro</code> - Button override with ghost variant
+          </li>
+          <li>
+            <code>src/client/components/custom/ClientHero.astro</code> - Custom hero component
+          </li>
+          <li>
+            <code>vendor/integration/vite-plugin-client-overrides.ts</code> - The magic plugin
+          </li>
+        </ul>
+
+        <h3>Next Steps</h3>
+        <ul class="space-y-2">
+          <li>Review <code>src/client/components/README.md</code> for best practices</li>
+          <li>Try creating your own component override</li>
+          <li>Build a custom component composing base components</li>
+          <li>Customize theme colors in <code>src/config.yaml</code></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  code {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.9em;
+  }
+
+  pre code {
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  .prose code {
+    background-color: rgba(0, 0, 0, 0.05);
+    padding: 0.125rem 0.25rem;
+    border-radius: 0.25rem;
+    font-size: 0.875em;
+  }
+
+  :global(.dark) .prose code {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+</style>

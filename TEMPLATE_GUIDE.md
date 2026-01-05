@@ -176,19 +176,38 @@ All components automatically use these theme values via CSS variables.
 
 ### Client Override System
 
-You can override any base component by creating a file in `src/client/` with the same path:
+**How It Works:**
 
-**Base:** `src/components/ui/Button.astro`  
-**Override:** `src/client/components/ui/Button.astro`
+The template includes a Vite plugin (`vendor/integration/vite-plugin-client-overrides.ts`) that automatically resolves component imports to client versions when they exist.
 
-The client version will be used automatically. You can still import the base version if needed:
-
+When you import a component:
 ```astro
----
-import BaseButton from '~/components/ui/Button.astro';
-// Extend BaseButton as needed
----
+import Button from '~/components/ui/Button.astro';
 ```
+
+The plugin checks if a corresponding file exists at `src/client/components/ui/Button.astro`:
+- **If it exists:** Import automatically resolves to the client version
+- **If it doesn't exist:** Import resolves to the base component
+
+**This means no code changes are needed when you override a component!**
+
+**To Override a Component:**
+
+1. Create file matching base component path:
+   - **Base:** `src/components/ui/Button.astro`
+   - **Override:** `src/client/components/ui/Button.astro`
+
+2. The override is used automatically everywhere
+
+3. No need to update imports in pages/layouts
+
+**Example Overrides:**
+
+The template includes example overrides in `src/client/components/`:
+- `ui/Button.astro` - Adds "ghost" variant to base Button
+- `custom/ClientHero.astro` - Custom hero component composing base components
+
+See `src/client/components/README.md` for detailed documentation and best practices.
 
 ### File Structure
 

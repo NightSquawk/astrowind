@@ -1,0 +1,180 @@
+---
+/**
+ * CLIENT CUSTOM COMPONENT EXAMPLE: ClientHero
+ *
+ * This demonstrates creating a NEW custom component (not an override) that composes
+ * base components from the template library.
+ *
+ * This approach is recommended when you need client-specific functionality rather than
+ * modifying base components. It shows how to:
+ * - Import and use base components (Button, Headline)
+ * - Create client-specific layouts
+ * - Use theme variables for styling
+ * - Maintain consistency with the design system
+ *
+ * Usage:
+ * import ClientHero from '~/client/components/custom/ClientHero.astro';
+ *
+ * <ClientHero
+ *   title="Welcome to Our Platform"
+ *   subtitle="Build amazing things with our tools"
+ *   primaryAction={{ text: "Get Started", href: "/signup" }}
+ *   secondaryAction={{ text: "Learn More", href: "/about" }}
+ * />
+ */
+
+import Button from '~/components/ui/Button.astro';
+import Headline from '~/components/ui/Headline.astro';
+
+interface Action {
+  text: string;
+  href: string;
+}
+
+interface Props {
+  title: string;
+  subtitle?: string;
+  tagline?: string;
+  primaryAction?: Action;
+  secondaryAction?: Action;
+  backgroundImage?: string;
+  class?: string;
+}
+
+const {
+  title,
+  subtitle,
+  tagline,
+  primaryAction,
+  secondaryAction,
+  backgroundImage,
+  class: className = '',
+} = Astro.props;
+---
+
+<section class={`client-hero ${className}`}>
+  <div class="client-hero__container">
+    <div class="client-hero__content">
+      <Headline
+        title={title}
+        subtitle={subtitle}
+        tagline={tagline}
+        classes={{
+          container: 'max-w-4xl',
+          title: 'text-4xl md:text-5xl lg:text-6xl',
+          subtitle: 'text-xl md:text-2xl',
+        }}
+      />
+
+      {(primaryAction || secondaryAction) && (
+        <div class="client-hero__actions">
+          {primaryAction && (
+            <Button
+              variant="primary"
+              size="large"
+              href={primaryAction.href}
+            >
+              {primaryAction.text}
+            </Button>
+          )}
+          {secondaryAction && (
+            <Button
+              variant="ghost"
+              size="large"
+              href={secondaryAction.href}
+            >
+              {secondaryAction.text}
+            </Button>
+          )}
+        </div>
+      )}
+    </div>
+
+    {backgroundImage && (
+      <div class="client-hero__background">
+        <img src={backgroundImage} alt="" />
+      </div>
+    )}
+  </div>
+</section>
+
+<style>
+  .client-hero {
+    position: relative;
+    padding: 4rem 1rem;
+    min-height: 600px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(
+      135deg,
+      var(--aw-color-primary) 0%,
+      var(--aw-color-accent) 100%
+    );
+    overflow: hidden;
+  }
+
+  .client-hero__container {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+
+  .client-hero__content {
+    position: relative;
+    z-index: 2;
+    color: white;
+  }
+
+  .client-hero__content :global(h2),
+  .client-hero__content :global(p) {
+    color: white !important;
+  }
+
+  .client-hero__actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .client-hero__background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    opacity: 0.2;
+  }
+
+  .client-hero__background img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  @media (max-width: 768px) {
+    .client-hero {
+      min-height: 500px;
+      padding: 3rem 1rem;
+    }
+
+    .client-hero__actions {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
+
+  /* Dark mode adjustments */
+  :global(.dark) .client-hero {
+    background: linear-gradient(
+      135deg,
+      var(--aw-color-secondary) 0%,
+      var(--aw-color-primary) 100%
+    );
+  }
+</style>

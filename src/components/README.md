@@ -138,19 +138,49 @@ SEO metadata component.
 
 ## Component Override System
 
-Clients can override any component by creating a file in `src/client/components/` with the same path structure.
+**Powered by Vite Plugin:**
 
-**Example:** To override `src/components/ui/Button.astro`, create `src/client/components/ui/Button.astro`.
+The template includes a custom Vite plugin (`vendor/integration/vite-plugin-client-overrides.ts`) that enables automatic component overrides. When you import from `~/components/*`, the plugin automatically checks for a client version first.
 
-The client version will be used instead of the base component. You can import the base component if needed:
+**How to Override:**
+
+1. Create file in `src/client/components/` matching the base component path
+2. Example: To override `src/components/ui/Button.astro`, create `src/client/components/ui/Button.astro`
+3. The client version is used automatically - no import changes needed!
+
+**Example:**
 
 ```astro
 ---
-// In src/client/components/ui/Button.astro
-import BaseButton from '~/components/ui/Button.astro';
-// Extend or modify as needed
+// src/client/components/ui/Button.astro
+// This file automatically overrides the base Button component
+
+interface Props {
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost'; // Added ghost
+  // ... other props
+}
 ---
+<!-- Your custom implementation -->
 ```
+
+**Usage in pages:**
+
+```astro
+---
+// No changes needed! Import works the same way
+import Button from '~/components/ui/Button.astro'; // Uses client version automatically
+---
+
+<Button variant="ghost">Click Me</Button>
+```
+
+**See Examples:**
+
+Check `src/client/components/` for working examples:
+- `ui/Button.astro` - Override example with added ghost variant
+- `custom/ClientHero.astro` - Custom component example
+
+For full documentation, see `src/client/components/README.md`.
 
 ## Theme Integration
 

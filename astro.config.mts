@@ -13,6 +13,7 @@ import cloudflare from '@astrojs/cloudflare';
 import type { AstroIntegration } from 'astro';
 
 import astrowind from './vendor/integration/index.js';
+import clientOverridesPlugin from './vendor/integration/vite-plugin-client-overrides.js';
 
 import { readingTimeRemarkPlugin, responsiveTablesRehypePlugin, lazyImagesRehypePlugin } from './src/utils/frontmatter.js';
 
@@ -102,6 +103,9 @@ export default defineConfig({
   },
 
   vite: {
+    plugins: [
+      clientOverridesPlugin(),
+    ],
     resolve: {
       alias: {
         '~': path.resolve(__dirname, './src'),
