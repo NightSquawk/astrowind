@@ -1,0 +1,200 @@
+---
+import WidgetWrapper from '~/components/ui/WidgetWrapper.astro';
+import Headline from '~/components/ui/Headline.astro';
+import Image from '~/components/common/Image.astro';
+import type { PhotoCarousel as Props } from '~/types';
+
+const {
+  title = await Astro.slots.render('title'),
+  subtitle = await Astro.slots.render('subtitle'),
+  tagline = await Astro.slots.render('tagline'),
+  images = [],
+  columns = 4,
+  showThumbnails = true,
+  lightboxEnabled = true,
+  autoplay = false,
+  gap = 16,
+  id,
+  isDark = false,
+  classes = {},
+  bg = await Astro.slots.render('bg'),
+} = Astro.props;
+
+// Unique ID for this gallery instance
+const galleryId = id || `photo-carousel-${Math.random().toString(36).substring(7)}`;
+
+// Calculate grid columns class
+const gridCols = {
+  2: 'sm:grid-cols-2',
+  3: 'sm:grid-cols-2 lg:grid-cols-3',
+  4: 'sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4',
+}[columns] || 'sm:grid-cols-2 lg:grid-cols-4';
+---
+
+<WidgetWrapper id={id} isDark={isDark} containerClass={`max-w-7xl ${classes?.container ?? ''}`} bg={bg}>
+  <Headline title={title} subtitle={subtitle} tagline={tagline} classes={classes?.headline} />
+
+  <!-- Main Gallery Container -->
+  <div
+    id={galleryId}
+    class="photo-carousel"
+    data-lightbox={lightboxEnabled}
+    data-autoplay={autoplay}
+    data-columns={columns}
+  >
+    <!-- Swiper Container for Carousel Mode -->
+    <div class="swiper photo-carousel-swiper">
+      <div class="swiper-wrapper">
+        {images.map((image, index) => (
+          <div class="swiper-slide">
+            <div
+              class="relative aspect-[4/3] overflow-hidden rounded-lg cursor-pointer group"
+              data-index={index}
+            >
+              {typeof image.src === 'string' ? (
+                <img
+                  src={image.src}
+                  alt={image.alt}
+                  loading={index < columns ? 'eager' : 'lazy'}
+                  class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                />
+              ) : (
+                <Image
+                  class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                  widths={[400, 600, 800]}
+                  sizes={`(max-width: 768px) 100vw, (max-width: 1024px) 50vw, ${100 / columns}vw`}
+                  loading={index < columns ? 'eager' : 'lazy'}
+                  width={800}
+                  height={600}
+                  {...image}
+                />
+              )}
+
+              <!-- Overlay on Hover -->
+              <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300"></div>
+
+              <!-- Caption Overlay -->
+              {image.caption && (
+                <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <p class="text-white text-sm font-medium">{image.caption}</p>
+                </div>
+              )}
+
+              <!-- Zoom Icon -->
+              {lightboxEnabled && (
+                <div class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <svg
+                    class="w-6 h-6 text-white drop-shadow-lg"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"
+                    />
+                  </svg>
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <!-- Navigation -->
+      <div class="photo-carousel-prev absolute left-0 top-1/2 -translate-y-1/2 z-10"></div>
+      <div class="photo-carousel-next absolute right-0 top-1/2 -translate-y-1/2 z-10"></div>
+
+      <!-- Pagination (Thumbnails) -->
+      {showThumbnails && (
+        <div class="photo-carousel-pagination mt-6"></div>
+      )}
+    </div>
+  </div>
+
+  <!-- Lightbox Modal -->
+  {lightboxEnabled && (
+    <div
+      id={`${galleryId}-lightbox`}
+      class="photo-lightbox fixed inset-0 bg-black/95 z-50 hidden items-center justify-center"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Image lightbox"
+    >
+      <!-- Lightbox Swiper -->
+      <div class="swiper photo-lightbox-swiper w-full h-full">
+        <div class="swiper-wrapper">
+          {images.map((image) => (
+            <div class="swiper-slide flex items-center justify-center">
+              <div class="relative max-w-7xl max-h-[90vh] w-full h-full flex items-center justify-center p-4">
+                {typeof image.src === 'string' ? (
+                  <img
+                    src={image.src}
+                    alt={image.alt}
+                    class="max-w-full max-h-full object-contain"
+                  />
+                ) : (
+                  <Image
+                    class="max-w-full max-h-full object-contain"
+                    widths={[800, 1200, 1600, 2000]}
+                    sizes="90vw"
+                    loading="lazy"
+                    width={1600}
+                    height={1200}
+                    {...image}
+                  />
+                )}
+
+                {/* Caption in Lightbox */}
+                {image.caption && (
+                  <div class="absolute bottom-8 left-0 right-0 text-center">
+                    <p class="text-white text-lg font-medium drop-shadow-lg px-4">{image.caption}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <!-- Lightbox Navigation -->
+        <button
+          class="lightbox-prev absolute left-4 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-12 h-12 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-sm transition-colors"
+          aria-label="Previous image"
+        >
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <button
+          class="lightbox-next absolute right-4 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-12 h-12 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-sm transition-colors"
+          aria-label="Next image"
+        >
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+
+        <!-- Close Button -->
+        <button
+          class="lightbox-close absolute top-4 right-4 z-10 flex items-center justify-center w-12 h-12 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-sm transition-colors"
+          aria-label="Close lightbox"
+        >
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+
+        <!-- Counter -->
+        <div class="absolute top-4 left-4 z-10 px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm">
+          <span class="lightbox-counter text-white font-medium">1 / {images.length}</span>
+        </div>
+      </div>
+    </div>
+  )}
+</WidgetWrapper>
+
+<script>
+  import '~/scripts/photo-carousel';
+</script>

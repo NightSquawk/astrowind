@@ -1,0 +1,61 @@
+---
+/**
+ * Google Tag Manager (GTM) Integration
+ *
+ * This component provides Google Tag Manager integration with both head and body snippets.
+ * GTM runs in parallel with existing GA4 tracking - they don't conflict.
+ *
+ * Usage:
+ * In Layout.astro <head>:
+ *   <GoogleTagManager />
+ *
+ * In Layout.astro <body>:
+ *   <GoogleTagManager position="body" />
+ *
+ * Configuration:
+ * - Set PUBLIC_GOOGLE_TAG_MANAGER_ID in .env or environment variables
+ * - Format: GTM-XXXXXXX
+ * - Only loads in production (not in development)
+ */
+
+interface Props {
+  position?: 'head' | 'body';
+}
+
+const { position = 'head' } = Astro.props;
+
+// Get GTM container ID from environment variables
+const gtmId = import.meta.env.PUBLIC_GOOGLE_TAG_MANAGER_ID;
+
+// Only load in production
+const isProd = import.meta.env.PROD;
+
+// Should we render this component?
+const shouldRender = gtmId && isProd;
+---
+
+{shouldRender && position === 'head' && (
+  <>
+    <!-- Google Tag Manager Head Snippet -->
+    <script is:inline define:vars={{ gtmId }}>
+      (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+      new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+      j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+      'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+      })(window,document,'script','dataLayer',gtmId);
+    </script>
+  </>
+)}
+
+{shouldRender && position === 'body' && (
+  <!-- Google Tag Manager Body Snippet (noscript) -->
+  <noscript>
+    <iframe
+      src={`https://www.googletagmanager.com/ns.html?id=${gtmId}`}
+      height="0"
+      width="0"
+      style="display:none;visibility:hidden"
+      title="Google Tag Manager"
+    ></iframe>
+  </noscript>
+)}

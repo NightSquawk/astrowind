@@ -1,0 +1,143 @@
+---
+/**
+ * IframeEmbed - Reusable iframe component for embedding external forms/content
+ *
+ * Common use cases:
+ * - HubSpot forms
+ * - Salesforce Web-to-Lead
+ * - GoHighLevel forms
+ * - NightSquawk forms
+ * - Any third-party embedded content
+ *
+ * Features:
+ * - Loading skeleton
+ * - Auto-resize support via external scripts
+ * - Responsive container
+ * - Security via sandbox attributes
+ * - Accessibility attributes
+ */
+
+import type { IframeEmbed as Props } from '~/types';
+
+const {
+  src,
+  title = 'Embedded Form',
+  height = '600px',
+  width = '100%',
+  loading = 'lazy',
+  sandbox = [],
+  scriptUrl,
+  onLoad,
+} = Astro.props;
+
+// Generate unique ID for this iframe
+const iframeId = `iframe-${Math.random().toString(36).substring(7)}`;
+
+// Build sandbox attribute string
+const sandboxAttr = sandbox.length > 0 ? sandbox.join(' ') : undefined;
+
+// Default sandbox for forms (if not specified)
+const defaultSandbox = 'allow-forms allow-scripts allow-same-origin allow-popups';
+---
+
+<div class="iframe-embed-container relative w-full" style={`height: ${height}`}>
+  <!-- Loading Skeleton -->
+  <div
+    id={`${iframeId}-loading`}
+    class="absolute inset-0 bg-gray-100 dark:bg-gray-800 animate-pulse rounded-lg flex items-center justify-center"
+  >
+    <div class="text-center">
+      <svg
+        class="animate-spin h-12 w-12 text-gray-400 mx-auto mb-4"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path
+          class="opacity-75"
+          fill="currentColor"
+          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+        ></path>
+      </svg>
+      <p class="text-gray-500 dark:text-gray-400 text-sm">Loading form...</p>
+    </div>
+  </div>
+
+  <!-- Iframe -->
+  <iframe
+    id={iframeId}
+    src={src}
+    title={title}
+    width={width}
+    height="100%"
+    loading={loading}
+    sandbox={sandboxAttr || defaultSandbox}
+    class="w-full h-full rounded-lg border-0"
+    allow="geolocation; microphone; camera"
+    {...onLoad ? { onload: onLoad } : {}}
+  ></iframe>
+</div>
+
+<!-- External Auto-Resize Script -->
+{scriptUrl && (
+  <script is:inline src={scriptUrl} async defer></script>
+)}
+
+<!-- Handle iframe load event -->
+<script define:vars={{ iframeId }}>
+  function handleIframeLoad() {
+    const iframe = document.getElementById(iframeId);
+    const loading = document.getElementById(`${iframeId}-loading`);
+
+    if (iframe && loading) {
+      iframe.addEventListener('load', () => {
+        // Hide loading skeleton
+        loading.classList.add('hidden');
+
+        // Track iframe load event
+        if (typeof window.gtag !== 'undefined') {
+          window.gtag('event', 'iframe_loaded', {
+            event_category: 'engagement',
+            iframe_src: iframe.src,
+            iframe_title: iframe.title,
+          });
+        }
+      });
+
+      // Timeout fallback (hide loading after 10 seconds even if load event doesn't fire)
+      setTimeout(() => {
+        loading.classList.add('hidden');
+      }, 10000);
+    }
+  }
+
+  // Initialize
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', handleIframeLoad);
+  } else {
+    handleIframeLoad();
+  }
+
+  // Re-initialize after Astro view transitions
+  document.addEventListener('astro:after-swap', handleIframeLoad);
+</script>
+
+<style>
+  /* Responsive iframe container */
+  .iframe-embed-container {
+    @apply min-h-[400px];
+  }
+
+  /* Ensure iframe is responsive */
+  .iframe-embed-container iframe {
+    @apply max-w-full;
+  }
+
+  /* Mobile adjustments */
+  @media (max-width: 640px) {
+    .iframe-embed-container {
+      @apply min-h-[500px];
+    }
+  }
+</style>

@@ -1,0 +1,103 @@
+/**
+ * Hero Carousel Custom Styles
+ *
+ * Custom styling for Swiper pagination, navigation, and carousel-specific overrides
+ * Uses theme CSS variables for colors to maintain consistency
+ */
+
+/* Carousel Container */
+.hero-carousel {
+  @apply relative w-full;
+  min-height: 500px;
+}
+
+.hero-carousel .swiper-slide {
+  @apply relative flex items-center justify-center;
+  min-height: 500px;
+}
+
+/* Pagination Dots */
+.hero-carousel-pagination {
+  @apply flex justify-center gap-2 z-10;
+}
+
+.hero-carousel-bullet {
+  @apply w-3 h-3 rounded-full cursor-pointer transition-all duration-300;
+  @apply bg-white/50 hover:bg-white/70;
+}
+
+.hero-carousel-bullet-active {
+  @apply bg-white w-8;
+}
+
+/* Navigation Arrows - Additional Styles */
+.hero-carousel-prev:hover,
+.hero-carousel-next:hover {
+  @apply scale-110;
+}
+
+.hero-carousel-prev:active,
+.hero-carousel-next:active {
+  @apply scale-95;
+}
+
+/* Disabled State */
+.swiper-button-disabled {
+  @apply opacity-30 cursor-not-allowed;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .hero-carousel {
+    min-height: 400px;
+  }
+
+  .hero-carousel .swiper-slide {
+    min-height: 400px;
+  }
+
+  /* Hide arrows on mobile */
+  .hero-carousel-prev,
+  .hero-carousel-next {
+    @apply hidden;
+  }
+
+  /* Larger dots on mobile for easier touch targets */
+  .hero-carousel-bullet {
+    @apply w-4 h-4;
+  }
+
+  .hero-carousel-bullet-active {
+    @apply w-10;
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .hero-carousel-bullet {
+    @apply bg-white/40 hover:bg-white/60;
+  }
+
+  .hero-carousel-bullet-active {
+    @apply bg-white/90;
+  }
+}
+
+/* Accessibility - Focus Styles */
+.hero-carousel-prev:focus-visible,
+.hero-carousel-next:focus-visible {
+  @apply outline-2 outline-offset-2 outline-white;
+}
+
+.hero-carousel-bullet:focus-visible {
+  @apply outline-2 outline-offset-2 outline-white ring-2 ring-white/50;
+}
+
+/* Loading State */
+.hero-carousel.swiper-initialized {
+  @apply opacity-100 transition-opacity duration-300;
+}
+
+.hero-carousel:not(.swiper-initialized) {
+  @apply opacity-0;
+}

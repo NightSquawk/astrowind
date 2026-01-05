@@ -279,3 +279,90 @@ export interface Content extends Omit<Headline, 'classes'>, Widget {
 }
 
 export interface Contact extends Omit<Headline, 'classes'>, Form, Widget {}
+
+// HERO CAROUSEL
+export interface HeroSlide {
+  title: string;
+  subtitle?: string;
+  content?: string;
+  primaryCTA?: CallToAction;
+  secondaryCTA?: CallToAction;
+  backgroundImage?: string | ImageMetadata;
+  overlayOpacity?: number; // 0-100
+}
+
+export interface HeroCarousel extends Widget {
+  slides: HeroSlide[];
+  autoAdvance?: boolean; // default: true
+  interval?: number; // milliseconds, default: 5000
+  showDots?: boolean; // default: true
+  showArrows?: boolean; // default: true
+  transitionSpeed?: number; // milliseconds, default: 600
+}
+
+// PHOTO CAROUSEL
+export interface GalleryImage {
+  src: string | ImageMetadata;
+  alt: string;
+  caption?: string;
+  thumbnail?: string | ImageMetadata; // Optional separate thumbnail
+}
+
+export interface PhotoCarousel extends Headline, Widget {
+  images: GalleryImage[];
+  columns?: number; // default: 4 (desktop)
+  showThumbnails?: boolean; // default: true
+  lightboxEnabled?: boolean; // default: true
+  autoplay?: boolean; // default: false
+  gap?: number; // gap between images in px, default: 16
+}
+
+// GOOGLE MAPS
+export interface GoogleMap extends Headline, Widget {
+  placeName?: string; // Business name for place search
+  address?: string; // Fallback address
+  coordinates?: { lat: number; lng: number }; // Fallback coordinates
+  zoom?: number; // default: 15
+  height?: string; // CSS height, default: '450px'
+  markerTitle?: string; // Custom marker title
+  showInfoWindow?: boolean; // default: true
+  mapTypeControl?: boolean; // default: false
+  streetViewControl?: boolean; // default: false
+  fullscreenControl?: boolean; // default: true
+}
+
+// SIDEBAR NAVIGATION
+export interface SidebarLink {
+  text: string;
+  href: string;
+  icon?: string; // Tabler icon name
+}
+
+export interface SidebarSection {
+  title?: string;
+  links: SidebarLink[];
+}
+
+export interface Sidebar extends Headline, Widget {
+  sections: SidebarSection[];
+  callToAction?: {
+    title?: string;
+    content?: string;
+    button?: CallToAction;
+  };
+  position?: 'left' | 'right'; // default: 'left'
+  stickyOffset?: number; // offset from top in px, default: 80
+  collapsible?: boolean; // mobile collapse, default: true
+}
+
+// IFRAME EMBED
+export interface IframeEmbed {
+  src: string; // Form URL
+  title?: string; // Accessibility title
+  height?: string; // CSS height, default: '600px'
+  width?: string; // CSS width, default: '100%'
+  loading?: 'lazy' | 'eager'; // default: 'lazy'
+  sandbox?: string[]; // iframe sandbox attributes
+  scriptUrl?: string; // Optional external script for auto-resize
+  onLoad?: string; // Optional JS to run on load
+}

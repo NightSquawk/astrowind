@@ -126,20 +126,154 @@ Components are organized into:
 
 All components accept a `class` prop for Tailwind customization and use theme CSS variables.
 
+### New Widget Components
+
+The template includes several advanced widgets built with Swiper.js and Google Maps:
+
+#### 1. HeroCarousel Widget
+**Location:** `src/components/widgets/HeroCarousel.astro`
+
+Multi-slide hero carousel with auto-advance, navigation, and CTAs.
+
+**Features:**
+- Multiple slides with independent content (title, subtitle, CTAs)
+- Auto-advance with configurable interval (default: 5s)
+- Manual navigation (arrows and pagination dots)
+- Keyboard navigation and pause on hover
+- Background images with overlay opacity control
+- Full analytics tracking (slide changes, CTA clicks)
+
+**Usage:**
+```astro
+<HeroCarousel
+  slides={[
+    {
+      title: 'Welcome to Our Practice',
+      subtitle: 'Expert Care Since 1995',
+      backgroundImage: import('~/assets/images/hero-1.jpg'),
+      primaryCTA: { text: 'Book Appointment', href: '/contact' },
+      overlayOpacity: 60
+    },
+    // ... more slides
+  ]}
+  autoAdvance={true}
+  interval={5000}
+/>
+```
+
+#### 2. PhotoCarousel Widget
+**Location:** `src/components/widgets/PhotoCarousel.astro`
+
+Responsive gallery with lightbox and thumbnail navigation.
+
+**Features:**
+- Responsive grid or carousel layout
+- Full-screen lightbox with zoom
+- Touch gestures and swipe support
+- Thumbnail navigation
+- Image captions
+- Lazy loading and optimization
+
+**Usage:**
+```astro
+<PhotoCarousel
+  title="Our Facility"
+  images={[
+    { src: import('~/assets/images/office-1.jpg'), alt: 'Reception area', caption: 'Modern reception' },
+    { src: import('~/assets/images/office-2.jpg'), alt: 'Treatment room' },
+  ]}
+  columns={4}
+  lightboxEnabled={true}
+/>
+```
+
+#### 3. GoogleMap Widget
+**Location:** `src/components/widgets/GoogleMap.astro`
+
+Interactive Google Maps with place search and geocoding.
+
+**Features:**
+- Place search by business name (Places API)
+- Address geocoding fallback
+- Direct coordinates fallback
+- Custom markers and info windows
+- Responsive container
+- Graceful fallback when API key missing
+
+**Setup:**
+1. Get API key from [Google Cloud Console](https://console.cloud.google.com/google/maps-apis)
+2. Enable these APIs:
+   - Maps JavaScript API
+   - Places API
+   - Geocoding API
+3. Set `PUBLIC_GOOGLE_MAPS_API_KEY` in `.env`
+
+**Usage:**
+```astro
+<GoogleMap
+  placeName="Dr. Brock Johnson Chiropractic"
+  address="123 Main St, Anytown, USA"
+  coordinates={{ lat: 37.7749, lng: -122.4194 }}
+  zoom={16}
+  height="500px"
+/>
+```
+
+#### 4. Sidebar Navigation Widget
+**Location:** `src/components/widgets/Sidebar.astro`
+
+Vertical navigation sidebar with active state detection.
+
+**Features:**
+- Grouped sections with titles
+- Active link highlighting (matches current URL)
+- Icon support (Tabler icons)
+- Sticky positioning on desktop
+- Collapsible on mobile
+- Optional CTA section at bottom
+
+**Usage:**
+```astro
+<Sidebar
+  sections={[
+    {
+      title: 'Our Services',
+      links: [
+        { text: 'Chiropractic Care', href: '/services/chiropractic', icon: 'tabler:heart-handshake' },
+        { text: 'Physical Therapy', href: '/services/physical-therapy', icon: 'tabler:physotherapist' },
+      ]
+    }
+  ]}
+  callToAction={{
+    title: 'Need Help?',
+    content: 'Schedule a free consultation',
+    button: { text: 'Book Now', href: '/contact' }
+  }}
+/>
+```
+
 ### Analytics Integration
 
 Multiple analytics platforms supported:
 - **Google Analytics 4** - Via `@astrolib/analytics`
+- **Google Tag Manager** - Container-based tag management (runs in parallel with GA4)
 - **Datadog RUM** - Real User Monitoring with custom events
 - **GoHighLevel** - Marketing platform tracking
 - **Termly** - Cookie consent management
 
 Analytics IDs configured in:
 1. `src/config.yaml` (googleAnalytics.id)
-2. Environment variables for Datadog/others
+2. Environment variables for GTM, Datadog, and other services
 3. `wrangler.json` for Cloudflare Workers environment
 
 Client-side scripts in `src/scripts/` handle event tracking.
+
+**Google Tag Manager Integration:**
+- Component: `src/components/tracking/GoogleTagManager.astro`
+- Helper functions: `src/scripts/gtm-events.ts`
+- Environment variable: `PUBLIC_GOOGLE_TAG_MANAGER_ID`
+- Runs in parallel with GA4 (no conflicts)
+- Supports custom dataLayer events with type-safe helpers
 
 ### Deployment Architecture
 
@@ -205,12 +339,74 @@ Client-side scripts in `src/scripts/` handle event tracking.
 
 Create a `.env` file (see `.env.example`):
 - `PUBLIC_SITE_URL` - Site URL for sitemap generation
+- `PUBLIC_GOOGLE_ANALYTICS_ID` - Google Analytics 4 measurement ID
+- `PUBLIC_GOOGLE_TAG_MANAGER_ID` - Google Tag Manager container ID (runs alongside GA4)
+- `PUBLIC_GOOGLE_MAPS_API_KEY` - Google Maps API key (for GoogleMap widget)
 - `PUBLIC_DATADOG_APPLICATION_ID` - Datadog RUM app ID
 - `PUBLIC_DATADOG_CLIENT_TOKEN` - Datadog RUM client token
 - `PUBLIC_TERMLY_CMP_WEBSITE_UUID` - Termly cookie consent UUID
-- `PUBLIC_GOOGLE_MAPS_API_KEY` - Google Maps API key
+- `PUBLIC_GO_HIGH_LEVEL_TRACKING_ID` - GoHighLevel tracking ID
 
 Variables prefixed with `PUBLIC_` are exposed to client-side code.
+
+## CRM Form Integration Patterns
+
+The template includes `IframeEmbed` component for embedding external CRM forms.
+
+**Component:** `src/components/forms/IframeEmbed.astro`
+
+**Features:**
+- Loading skeleton with smooth transition
+- Auto-resize support via external scripts
+- Responsive container
+- Security via sandbox attributes
+- Analytics tracking (form load events)
+
+### Common CRM Integrations
+
+#### HubSpot Forms
+```astro
+<IframeEmbed
+  src="https://share.hsforms.com/1XXXXXXXX"
+  title="HubSpot Contact Form"
+  height="700px"
+  scriptUrl="https://js.hsforms.net/forms/embed/v2.js"
+/>
+```
+
+#### Salesforce Web-to-Lead
+```astro
+<IframeEmbed
+  src="https://webto.salesforce.com/servlet/servlet.WebToLead?encoding=UTF-8"
+  title="Contact Form"
+  height="650px"
+/>
+```
+
+#### GoHighLevel Forms
+```astro
+<IframeEmbed
+  src="https://link.nsqkt.app/widget/form/XXXXXXXX"
+  title="Appointment Request"
+  height="750px"
+  scriptUrl="https://link.nsqkt.app/js/form_embed.js"
+/>
+```
+
+#### NightSquawk Forms
+```astro
+<IframeEmbed
+  src="https://app.nightsquawk.com/forms/XXXXXXXX"
+  title="Contact Form"
+  height="600px"
+/>
+```
+
+**Tips:**
+- Set appropriate `height` to avoid scrollbars (test different viewport sizes)
+- Use `scriptUrl` for forms that support auto-resize
+- The component uses a loading skeleton to improve perceived performance
+- Forms are lazy-loaded by default for better page load performance
 
 ## Best Practices
 

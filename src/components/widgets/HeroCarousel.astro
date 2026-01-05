@@ -1,0 +1,154 @@
+---
+import Image from '~/components/common/Image.astro';
+import Button from '~/components/ui/Button.astro';
+import type { HeroCarousel as Props } from '~/types';
+
+const {
+  slides = [],
+  autoAdvance = true,
+  interval = 5000,
+  showDots = true,
+  showArrows = true,
+  transitionSpeed = 600,
+  id,
+  bg = await Astro.slots.render('bg'),
+} = Astro.props;
+
+// Unique ID for this carousel instance
+const carouselId = id || `hero-carousel-${Math.random().toString(36).substring(7)}`;
+---
+
+<section class="relative md:-mt-[76px] not-prose" {...id ? { id } : {}}>
+  <div class="absolute inset-0 pointer-events-none" aria-hidden="true">
+    <slot name="bg">
+      {bg ? <Fragment set:html={bg} /> : null}
+    </slot>
+  </div>
+
+  <div class="relative">
+    <div class="pt-0 md:pt-[76px] pointer-events-none"></div>
+
+    <!-- Swiper Container -->
+    <div
+      id={carouselId}
+      class="hero-carousel swiper"
+      data-autoplay={autoAdvance}
+      data-interval={interval}
+      data-speed={transitionSpeed}
+    >
+      <!-- Slides Wrapper -->
+      <div class="swiper-wrapper">
+        {slides.map((slide, index) => (
+          <div class="swiper-slide">
+            <!-- Slide Background Image -->
+            {slide.backgroundImage && (
+              <div class="absolute inset-0 overflow-hidden">
+                {typeof slide.backgroundImage === 'string' ? (
+                  <Fragment set:html={slide.backgroundImage} />
+                ) : (
+                  <Image
+                    class="w-full h-full object-cover"
+                    widths={[768, 1024, 1536, 2048]}
+                    sizes="100vw"
+                    loading={index === 0 ? 'eager' : 'lazy'}
+                    width={1920}
+                    height={1080}
+                    {...slide.backgroundImage}
+                  />
+                )}
+                <!-- Overlay -->
+                {slide.overlayOpacity !== undefined && (
+                  <div
+                    class="absolute inset-0 bg-black"
+                    style={`opacity: ${slide.overlayOpacity / 100}`}
+                  />
+                )}
+              </div>
+            )}
+
+            <!-- Slide Content -->
+            <div class="relative max-w-7xl mx-auto px-4 sm:px-6 py-12 md:py-20">
+              <div class="text-center max-w-5xl mx-auto">
+                {slide.title && (
+                  <h2
+                    class="text-5xl md:text-6xl font-bold leading-tighter tracking-tighter mb-4 font-heading text-white drop-shadow-lg"
+                    set:html={slide.title}
+                  />
+                )}
+
+                {slide.subtitle && (
+                  <p
+                    class="text-xl md:text-2xl text-white/90 mb-6 drop-shadow-md"
+                    set:html={slide.subtitle}
+                  />
+                )}
+
+                {slide.content && (
+                  <div class="max-w-3xl mx-auto mb-8">
+                    <p class="text-lg text-white/80 drop-shadow-md" set:html={slide.content} />
+                  </div>
+                )}
+
+                {(slide.primaryCTA || slide.secondaryCTA) && (
+                  <div class="max-w-xs sm:max-w-md m-auto flex flex-nowrap flex-col sm:flex-row sm:justify-center gap-4">
+                    {slide.primaryCTA && (
+                      <div class="flex w-full sm:w-auto">
+                        <Button {...slide.primaryCTA} class="w-full sm:mb-0" />
+                      </div>
+                    )}
+                    {slide.secondaryCTA && (
+                      <div class="flex w-full sm:w-auto">
+                        <Button {...slide.secondaryCTA} variant="secondary" class="w-full sm:mb-0" />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <!-- Navigation Arrows -->
+      {showArrows && (
+        <>
+          <button
+            class="hero-carousel-prev absolute left-4 top-1/2 -translate-y-1/2 z-10 hidden md:flex items-center justify-center w-12 h-12 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-sm transition-colors group"
+            aria-label="Previous slide"
+          >
+            <svg
+              class="w-6 h-6 text-white drop-shadow-md"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <button
+            class="hero-carousel-next absolute right-4 top-1/2 -translate-y-1/2 z-10 hidden md:flex items-center justify-center w-12 h-12 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-sm transition-colors group"
+            aria-label="Next slide"
+          >
+            <svg
+              class="w-6 h-6 text-white drop-shadow-md"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </>
+      )}
+
+      <!-- Pagination Dots -->
+      {showDots && (
+        <div class="hero-carousel-pagination !bottom-8 md:!bottom-12"></div>
+      )}
+    </div>
+  </div>
+</section>
+
+<script>
+  import '~/scripts/hero-carousel';
+</script>

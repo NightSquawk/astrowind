@@ -1,0 +1,229 @@
+---
+import WidgetWrapper from '~/components/ui/WidgetWrapper.astro';
+import Headline from '~/components/ui/Headline.astro';
+import Button from '~/components/ui/Button.astro';
+import { Icon } from 'astro-icon/components';
+import type { Sidebar as Props } from '~/types';
+
+const {
+  title = await Astro.slots.render('title'),
+  subtitle = await Astro.slots.render('subtitle'),
+  tagline = await Astro.slots.render('tagline'),
+  sections = [],
+  callToAction,
+  position = 'left',
+  stickyOffset = 80,
+  collapsible = true,
+  id,
+  isDark = false,
+  classes = {},
+  bg = await Astro.slots.render('bg'),
+} = Astro.props;
+
+// Unique ID for this sidebar
+const sidebarId = id || `sidebar-${Math.random().toString(36).substring(7)}`;
+
+// Get current page path for active link detection
+const currentPath = Astro.url.pathname;
+---
+
+<WidgetWrapper
+  id={id}
+  isDark={isDark}
+  containerClass={`${classes?.container ?? ''}`}
+  bg={bg}
+>
+  {(title || subtitle || tagline) && (
+    <Headline title={title} subtitle={subtitle} tagline={tagline} classes={classes?.headline} />
+  )}
+
+  <!-- Sidebar Navigation -->
+  <aside
+    id={sidebarId}
+    class="sidebar-nav"
+    data-sidebar-id={sidebarId}
+    data-collapsible={collapsible}
+  >
+    <!-- Mobile Toggle Button (only if collapsible) -->
+    {collapsible && (
+      <button
+        class="sidebar-toggle lg:hidden w-full flex items-center justify-between px-4 py-3 bg-gray-100 dark:bg-gray-800 rounded-lg mb-4 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+        aria-expanded="false"
+        aria-controls={`${sidebarId}-content`}
+        aria-label="Toggle navigation menu"
+      >
+        <span class="font-semibold text-default">Navigation Menu</span>
+        <svg
+          class="w-5 h-5 transform transition-transform"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+    )}
+
+    <!-- Sidebar Content -->
+    <nav
+      id={`${sidebarId}-content`}
+      class={`sidebar-content ${collapsible ? 'lg:block' : 'block'}`}
+      style={`top: ${stickyOffset}px;`}
+      aria-label="Sidebar navigation"
+    >
+      {sections.map((section, sectionIndex) => (
+        <div class={sectionIndex > 0 ? 'mt-6' : ''}>
+          {section.title && (
+            <h3 class="text-sm font-semibold text-muted uppercase tracking-wider mb-3">
+              {section.title}
+            </h3>
+          )}
+
+          <ul class="space-y-1">
+            {section.links.map((link) => {
+              const isActive =
+                currentPath === link.href ||
+                (link.href !== '/' && currentPath.startsWith(link.href));
+
+              return (
+                <li>
+                  <a
+                    href={link.href}
+                    class={`sidebar-link flex items-center px-4 py-2 rounded-lg transition-colors ${
+                      isActive
+                        ? 'bg-primary text-white font-medium'
+                        : 'text-default hover:bg-gray-100 dark:hover:bg-gray-800'
+                    }`}
+                    aria-current={isActive ? 'page' : undefined}
+                  >
+                    {link.icon && (
+                      <Icon name={link.icon} class="w-5 h-5 mr-3 flex-shrink-0" />
+                    )}
+                    <span>{link.text}</span>
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ))}
+
+      {/* CTA Section */}
+      {callToAction && (
+        <div class="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
+          {callToAction.title && (
+            <h3 class="text-lg font-semibold text-heading mb-2">
+              {callToAction.title}
+            </h3>
+          )}
+          {callToAction.content && (
+            <p class="text-sm text-muted mb-4">
+              {callToAction.content}
+            </p>
+          )}
+          {callToAction.button && (
+            <Button {...callToAction.button} class="w-full" />
+          )}
+        </div>
+      )}
+    </nav>
+  </aside>
+</WidgetWrapper>
+
+<style>
+  .sidebar-content {
+    @apply sticky max-h-[calc(100vh-8rem)] overflow-y-auto;
+  }
+
+  /* Mobile: Collapsible by default */
+  @media (max-width: 1023px) {
+    .sidebar-content {
+      @apply hidden;
+      @apply static max-h-none;
+    }
+
+    .sidebar-content.expanded {
+      @apply block;
+    }
+  }
+
+  /* Desktop: Always visible */
+  @media (min-width: 1024px) {
+    .sidebar-content {
+      @apply block;
+    }
+  }
+
+  /* Custom scrollbar for sidebar */
+  .sidebar-content {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(203 213 225) transparent;
+  }
+
+  .sidebar-content::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .sidebar-content::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .sidebar-content::-webkit-scrollbar-thumb {
+    background-color: rgb(203 213 225);
+    border-radius: 3px;
+  }
+
+  .dark .sidebar-content {
+    scrollbar-color: rgb(71 85 105) transparent;
+  }
+
+  .dark .sidebar-content::-webkit-scrollbar-thumb {
+    background-color: rgb(71 85 105);
+  }
+</style>
+
+<script>
+  // Handle mobile toggle
+  function initSidebarToggle() {
+    const sidebars = document.querySelectorAll('[data-sidebar-id]');
+
+    sidebars.forEach((sidebar) => {
+      const toggle = sidebar.querySelector('.sidebar-toggle');
+      const content = sidebar.querySelector('.sidebar-content');
+      const icon = toggle?.querySelector('svg');
+
+      if (!toggle || !content) return;
+
+      toggle.addEventListener('click', () => {
+        const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
+
+        // Toggle state
+        toggle.setAttribute('aria-expanded', (!isExpanded).toString());
+        content.classList.toggle('expanded');
+        icon?.classList.toggle('rotate-180');
+      });
+
+      // Close on link click (mobile)
+      const links = content.querySelectorAll('.sidebar-link');
+      links.forEach((link) => {
+        link.addEventListener('click', () => {
+          if (window.innerWidth < 1024) {
+            toggle.setAttribute('aria-expanded', 'false');
+            content.classList.remove('expanded');
+            icon?.classList.remove('rotate-180');
+          }
+        });
+      });
+    });
+  }
+
+  // Initialize on load
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSidebarToggle);
+  } else {
+    initSidebarToggle();
+  }
+
+  // Re-initialize after Astro view transitions
+  document.addEventListener('astro:after-swap', initSidebarToggle);
+</script>
