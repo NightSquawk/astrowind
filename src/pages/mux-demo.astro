@@ -1,0 +1,209 @@
+---
+import Layout from '~/layouts/PageLayout.astro';
+import MuxVideoPlayer from '~/plugins/mux/components/MuxVideoPlayer.astro';
+import MuxThumbnail from '~/plugins/mux/components/MuxThumbnail.astro';
+import { getMuxClient, getPlaybackIdFromAsset } from '~/plugins/mux/lib/mux-client';
+
+const pageTitle = 'Mux Video Demo';
+const pageDescription = 'Testing Mux video streaming integration';
+
+// Mux Asset ID provided
+const assetId = 'T01YalSLFFB6fyTIpVPjgxPMR8d1SQlTt02DglA01aQhAY';
+
+// Try to fetch playback ID from asset
+let playbackId: string | null = null;
+let asset: any = null;
+let errorMessage: string | null = null;
+
+try {
+  const muxClient = getMuxClient();
+
+  if (muxClient) {
+    // Fetch asset details
+    asset = await muxClient.video.assets.retrieve(assetId);
+
+    // Get public playback ID
+    playbackId = asset.playback_ids?.find((id: any) => id.policy === 'public')?.id || null;
+
+    console.log('[Mux Demo] Asset:', asset);
+    console.log('[Mux Demo] Playback ID:', playbackId);
+  } else {
+    errorMessage = 'Mux client not configured. Please set MUX_TOKEN_ID and MUX_TOKEN_SECRET in .env';
+  }
+} catch (error) {
+  console.error('[Mux Demo] Error fetching asset:', error);
+  errorMessage = error instanceof Error ? error.message : 'Unknown error fetching Mux asset';
+}
+---
+
+<Layout metadata={{ title: pageTitle, description: pageDescription }}>
+  <section class="px-6 sm:px-6 py-12 sm:py-16 lg:py-20 mx-auto max-w-5xl">
+    <!-- Header -->
+    <div class="mb-12 text-center">
+      <h1 class="text-4xl md:text-5xl font-bold leading-tighter tracking-tighter mb-4 font-heading">
+        🎥 Mux Video Streaming Demo
+      </h1>
+      <p class="text-xl text-muted max-w-3xl mx-auto">
+        Testing Mux video player integration with automatic Mux Data analytics
+      </p>
+    </div>
+
+    <!-- Asset Information -->
+    <div class="mb-8 p-6 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800">
+      <h2 class="text-2xl font-semibold mb-4">Asset Information</h2>
+      <dl class="space-y-2">
+        <div>
+          <dt class="font-medium text-muted text-sm">Asset ID:</dt>
+          <dd class="font-mono text-sm break-all">{assetId}</dd>
+        </div>
+        {playbackId && (
+          <div>
+            <dt class="font-medium text-muted text-sm">Playback ID:</dt>
+            <dd class="font-mono text-sm break-all">{playbackId}</dd>
+          </div>
+        )}
+        {asset && (
+          <>
+            <div>
+              <dt class="font-medium text-muted text-sm">Status:</dt>
+              <dd class="text-sm">{asset.status}</dd>
+            </div>
+            {asset.duration && (
+              <div>
+                <dt class="font-medium text-muted text-sm">Duration:</dt>
+                <dd class="text-sm">{Math.round(asset.duration)} seconds</dd>
+              </div>
+            )}
+            {asset.aspect_ratio && (
+              <div>
+                <dt class="font-medium text-muted text-sm">Aspect Ratio:</dt>
+                <dd class="text-sm">{asset.aspect_ratio}</dd>
+              </div>
+            )}
+          </>
+        )}
+      </dl>
+    </div>
+
+    <!-- Error Message -->
+    {errorMessage && (
+      <div class="mb-8 p-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+        <h3 class="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">⚠️ Error</h3>
+        <p class="text-red-700 dark:text-red-300">{errorMessage}</p>
+        <p class="text-sm text-red-600 dark:text-red-400 mt-2">
+          Make sure both MUX_TOKEN_ID and MUX_TOKEN_SECRET are set in your .env file.
+        </p>
+      </div>
+    )}
+
+    <!-- Video Player -->
+    {playbackId ? (
+      <div class="mb-12">
+        <h2 class="text-2xl font-semibold mb-4">Video Player</h2>
+        <div class="rounded-lg overflow-hidden shadow-lg">
+          <MuxVideoPlayer
+            playbackId={playbackId}
+            metadata={{
+              video_id: assetId,
+              video_title: 'Mux Demo Video',
+              page_type: 'demo',
+              viewer_user_id: 'demo-user',
+            }}
+            aspectRatio="16:9"
+            controls={true}
+            preload="metadata"
+          />
+        </div>
+        <p class="text-sm text-muted mt-4">
+          ℹ️ This player automatically sends analytics data to Mux Data, including:
+          view counts, play rate, buffering, video quality, and viewer engagement metrics.
+        </p>
+      </div>
+    ) : !errorMessage && (
+      <div class="mb-12 p-8 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg text-center">
+        <p class="text-yellow-800 dark:text-yellow-200">
+          No playback ID found for this asset. The asset may be processing or doesn't have a public playback policy.
+        </p>
+      </div>
+    )}
+
+    <!-- Thumbnail Examples -->
+    {playbackId && (
+      <div class="mb-12">
+        <h2 class="text-2xl font-semibold mb-4">Thumbnail Examples</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <p class="text-sm font-medium text-muted mb-2">At 5 seconds</p>
+            <MuxThumbnail
+              playbackId={playbackId}
+              time={5}
+              width={400}
+              alt="Thumbnail at 5 seconds"
+              class="rounded-lg shadow-md w-full"
+            />
+          </div>
+          <div>
+            <p class="text-sm font-medium text-muted mb-2">At 10 seconds</p>
+            <MuxThumbnail
+              playbackId={playbackId}
+              time={10}
+              width={400}
+              alt="Thumbnail at 10 seconds"
+              class="rounded-lg shadow-md w-full"
+            />
+          </div>
+          <div>
+            <p class="text-sm font-medium text-muted mb-2">At 15 seconds</p>
+            <MuxThumbnail
+              playbackId={playbackId}
+              time={15}
+              width={400}
+              alt="Thumbnail at 15 seconds"
+              class="rounded-lg shadow-md w-full"
+            />
+          </div>
+        </div>
+      </div>
+    )}
+
+    <!-- Mux Data Information -->
+    <div class="p-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+      <h2 class="text-2xl font-semibold mb-4">📊 Mux Data Integration</h2>
+      <p class="text-muted mb-4">
+        The Mux Player web component automatically integrates with Mux Data. No additional configuration needed!
+      </p>
+      <ul class="list-disc list-inside space-y-2 text-muted">
+        <li>Automatic view tracking</li>
+        <li>Quality of Experience (QoE) metrics</li>
+        <li>Buffering and startup time</li>
+        <li>Video quality tracking</li>
+        <li>Viewer engagement metrics</li>
+        <li>Custom metadata (video_id, video_title, viewer_user_id, etc.)</li>
+      </ul>
+      <p class="text-sm text-muted mt-4">
+        View analytics at: <a href="https://dashboard.mux.com/data" target="_blank" rel="noopener noreferrer" class="text-primary underline">Mux Data Dashboard</a>
+      </p>
+    </div>
+
+    <!-- Code Example -->
+    <div class="mt-12">
+      <h2 class="text-2xl font-semibold mb-4">Usage Example</h2>
+      <pre class="bg-gray-900 text-gray-100 p-6 rounded-lg overflow-x-auto"><code>{`---
+import MuxVideoPlayer from '~/plugins/mux/components/MuxVideoPlayer.astro';
+
+const playbackId = 'your-playback-id';
+---
+
+<MuxVideoPlayer
+  playbackId={playbackId}
+  metadata={{
+    video_id: 'my-video-123',
+    video_title: 'My Awesome Video',
+    viewer_user_id: 'user-456',
+  }}
+  aspectRatio="16:9"
+  controls={true}
+/>`}</code></pre>
+    </div>
+  </section>
+</Layout>
