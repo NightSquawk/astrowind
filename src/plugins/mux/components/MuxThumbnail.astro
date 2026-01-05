@@ -1,0 +1,23 @@
+---
+interface Props {
+  playbackId: string;
+  time?: number;
+  width?: number;
+  height?: number;
+  alt?: string;
+  class?: string;
+}
+
+const { playbackId, time, width, height, alt = 'Video thumbnail', class: className = '' } = Astro.props;
+
+// Build thumbnail URL with parameters
+const params = new URLSearchParams();
+if (time) params.set('time', time.toString());
+if (width) params.set('width', width.toString());
+if (height) params.set('height', height.toString());
+
+const query = params.toString();
+const thumbnailUrl = `https://image.mux.com/${playbackId}/thumbnail.jpg${query ? '?' + query : ''}`;
+---
+
+<img src={thumbnailUrl} alt={alt} width={width} height={height} class={className} loading="lazy" />

@@ -1,0 +1,74 @@
+---
+import type { MuxAudioPlayerProps } from '../lib/types';
+
+interface Props extends MuxAudioPlayerProps {}
+
+const {
+  playbackId,
+  title = 'Audio Track',
+  artist,
+  artwork,
+  metadata = {},
+  class: className = '',
+} = Astro.props;
+
+const audioMetadata = {
+  ...metadata,
+  audio_title: title,
+  audio_artist: artist,
+};
+---
+
+<div class={`mux-audio-container ${className}`}>
+  <mux-audio
+    playback-id={playbackId}
+    metadata={JSON.stringify(audioMetadata)}
+    controls
+    class="w-full"
+  ></mux-audio>
+
+  {
+    (title || artist || artwork) && (
+      <div class="mux-audio-metadata mt-4 flex items-center gap-4">
+        {artwork && (
+          <img src={artwork} alt={title} class="w-16 h-16 rounded-lg object-cover" loading="lazy" />
+        )}
+        <div class="flex-1">
+          {title && <p class="font-semibold text-default">{title}</p>}
+          {artist && <p class="text-sm text-muted">{artist}</p>}
+        </div>
+      </div>
+    )
+  }
+</div>
+
+<style>
+  .mux-audio-container {
+    @apply p-4 bg-gray-50 dark:bg-gray-900 rounded-lg;
+  }
+
+  mux-audio {
+    @apply w-full;
+  }
+</style>
+
+<script>
+  // Import Mux Audio player
+  import '@mux/mux-audio';
+
+  // Track audio analytics
+  document.addEventListener('DOMContentLoaded', () => {
+    const players = document.querySelectorAll('mux-audio');
+
+    players.forEach((player) => {
+      player.addEventListener('play', () => {
+        if (typeof window.gtag !== 'undefined') {
+          window.gtag('event', 'audio_play', {
+            event_category: 'engagement',
+            audio_id: player.getAttribute('playback-id'),
+          });
+        }
+      });
+    });
+  });
+</script>

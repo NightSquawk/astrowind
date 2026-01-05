@@ -1,0 +1,79 @@
+---
+import type { MuxPlayerProps } from '../lib/types';
+import { getAspectRatioClass } from '../lib/utils';
+
+interface Props extends MuxPlayerProps {}
+
+const {
+  playbackId,
+  metadata = {},
+  autoplay = false,
+  muted = false,
+  loop = false,
+  controls = true,
+  preload = 'metadata',
+  poster,
+  aspectRatio = '16:9',
+  class: className = '',
+} = Astro.props;
+
+const aspectClass = getAspectRatioClass(aspectRatio);
+
+// Unique ID for this player instance
+const playerId = `mux-player-${Math.random().toString(36).substring(7)}`;
+---
+
+<div class={`mux-video-container ${aspectClass} ${className}`}>
+  <mux-player
+    id={playerId}
+    playback-id={playbackId}
+    metadata={JSON.stringify(metadata)}
+    autoplay={autoplay}
+    muted={muted}
+    loop={loop}
+    controls={controls}
+    preload={preload}
+    poster={poster}
+    class="w-full h-full"
+  ></mux-player>
+</div>
+
+<style>
+  .mux-video-container {
+    @apply relative w-full overflow-hidden rounded-lg bg-black;
+  }
+
+  mux-player {
+    @apply block w-full h-full;
+  }
+</style>
+
+<script>
+  // Import Mux Player web component
+  import '@mux/mux-player';
+
+  // Track video analytics
+  document.addEventListener('DOMContentLoaded', () => {
+    const players = document.querySelectorAll('mux-player');
+
+    players.forEach((player) => {
+      player.addEventListener('play', () => {
+        if (typeof window.gtag !== 'undefined') {
+          window.gtag('event', 'video_play', {
+            event_category: 'engagement',
+            video_id: player.getAttribute('playback-id'),
+          });
+        }
+      });
+
+      player.addEventListener('ended', () => {
+        if (typeof window.gtag !== 'undefined') {
+          window.gtag('event', 'video_complete', {
+            event_category: 'engagement',
+            video_id: player.getAttribute('playback-id'),
+          });
+        }
+      });
+    });
+  });
+</script>

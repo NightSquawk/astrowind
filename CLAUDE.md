@@ -275,6 +275,69 @@ Client-side scripts in `src/scripts/` handle event tracking.
 - Runs in parallel with GA4 (no conflicts)
 - Supports custom dataLayer events with type-safe helpers
 
+### Mux Video & Audio Integration
+
+The template includes a modular Mux plugin for video and audio streaming.
+
+**Location:** `src/plugins/mux/`
+
+#### Components
+
+- `MuxVideoPlayer.astro` - Video player with analytics
+- `MuxAudioPlayer.astro` - Audio player for podcasts
+- `MuxThumbnail.astro` - Generate video thumbnails
+
+#### Setup
+
+1. Get Mux credentials from [dashboard.mux.com](https://dashboard.mux.com)
+2. Set environment variables:
+   ```bash
+   MUX_TOKEN_ID=your-token-id
+   MUX_TOKEN_SECRET=your-token-secret
+   ```
+3. For production, use Cloudflare secrets:
+   ```bash
+   wrangler secret put MUX_TOKEN_ID
+   wrangler secret put MUX_TOKEN_SECRET
+   ```
+
+#### Usage in Content
+
+Add Mux video/audio to any content collection:
+
+**Blog Post with Video:**
+```markdown
+---
+title: 'My Post'
+video:
+  playbackId: 'abc123'
+  type: 'video'
+  aspectRatio: '16:9'
+---
+```
+
+**Podcast Episode with Audio:**
+```markdown
+---
+title: 'Episode 1'
+audio:
+  playbackId: 'xyz789'
+  type: 'audio'
+  title: 'Episode 1: Introduction'
+---
+```
+
+The video/audio will be automatically displayed when rendering the post or episode.
+
+#### Plugin Architecture
+
+All Mux code is in `src/plugins/mux/` for:
+- **Modularity** - Easy to add/remove
+- **Extensibility** - Template for future plugins
+- **Maintainability** - Isolated from core template
+
+See `src/plugins/mux/README.md` for detailed documentation.
+
 ### Deployment Architecture
 
 **Build output:** Static site with Cloudflare Workers adapter
@@ -346,8 +409,10 @@ Create a `.env` file (see `.env.example`):
 - `PUBLIC_DATADOG_CLIENT_TOKEN` - Datadog RUM client token
 - `PUBLIC_TERMLY_CMP_WEBSITE_UUID` - Termly cookie consent UUID
 - `PUBLIC_GO_HIGH_LEVEL_TRACKING_ID` - GoHighLevel tracking ID
+- `MUX_TOKEN_ID` - Mux API token ID (keep secret!)
+- `MUX_TOKEN_SECRET` - Mux API token secret (keep secret!)
 
-Variables prefixed with `PUBLIC_` are exposed to client-side code.
+Variables prefixed with `PUBLIC_` are exposed to client-side code. Keep `MUX_TOKEN_*` variables private (no PUBLIC_ prefix).
 
 ## CRM Form Integration Patterns
 

@@ -51,6 +51,20 @@ interface ImportMetaEnv {
   
   // Google Maps
   readonly PUBLIC_GOOGLE_MAPS_API_KEY?: string;
+
+  // Mux Video & Audio
+  readonly MUX_TOKEN_ID?: string;
+  readonly MUX_TOKEN_SECRET?: string;
+  readonly PUBLIC_MUX_TOKEN_ID?: string;
+  readonly PUBLIC_MUX_TOKEN_SECRET?: string;
+}
+
+// Mux Player web component type declarations
+declare namespace JSX {
+  interface IntrinsicElements {
+    'mux-player': any;
+    'mux-audio': any;
+  }
 }
 
 export {};

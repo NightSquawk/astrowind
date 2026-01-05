@@ -1,0 +1,167 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { getCollection } from 'astro:content';
+import PageLayout from '~/layouts/PageLayout.astro';
+import MuxVideoPlayer from '~/plugins/mux/components/MuxVideoPlayer.astro';
+import { findPostsByIds } from '~/utils/blog';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('post');
+
+  // Filter out draft posts in production
+  const publishedPosts = import.meta.env.PROD
+    ? posts.filter(post => !post.data.draft)
+    : posts;
+
+  return publishedPosts.map((post) => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
+}
+
+interface Props {
+  post: any;
+}
+
+const { post } = Astro.props;
+const { Content } = await post.render();
+
+// Get related posts (if needed)
+// const relatedPosts = post.data.tags
+//   ? await findPostsByIds(post.data.tags.slice(0, 3))
+//   : [];
+
+const pageTitle = post.data.metadata?.title || post.data.title;
+const pageDescription = post.data.metadata?.description || post.data.excerpt;
+
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": post.data.title,
+  "description": post.data.excerpt || post.data.title,
+  "datePublished": post.data.publishDate?.toISOString(),
+  "dateModified": post.data.updateDate?.toISOString() || post.data.publishDate?.toISOString(),
+  "author": post.data.author ? {
+    "@type": "Person",
+    "name": post.data.author
+  } : undefined,
+};
+---
+
+<PageLayout
+  metadata={{
+    title: pageTitle,
+    description: pageDescription,
+    ...post.data.metadata,
+  }}
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+  </Fragment>
+
+  <article class="px-6 sm:px-6 py-12 sm:py-16 lg:py-20 mx-auto max-w-3xl">
+    <!-- Post Header -->
+    <header class="mb-8">
+      {post.data.category && (
+        <div class="mb-2">
+          <span class="inline-block px-3 py-1 text-sm font-medium bg-primary text-white rounded-full">
+            {post.data.category}
+          </span>
+        </div>
+      )}
+
+      <h1 class="text-4xl md:text-5xl font-bold leading-tighter tracking-tighter mb-4 font-heading">
+        {post.data.title}
+      </h1>
+
+      {post.data.excerpt && (
+        <p class="text-xl text-muted mb-4">
+          {post.data.excerpt}
+        </p>
+      )}
+
+      <div class="flex items-center gap-4 text-sm text-muted">
+        {post.data.author && (
+          <span>By {post.data.author}</span>
+        )}
+        {post.data.publishDate && (
+          <time datetime={post.data.publishDate.toISOString()}>
+            {post.data.publishDate.toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            })}
+          </time>
+        )}
+      </div>
+    </header>
+
+    <!-- Video Player (if video exists) -->
+    {post.data.video && post.data.video.playbackId && (
+      <div class="mb-8">
+        <MuxVideoPlayer
+          playbackId={post.data.video.playbackId}
+          metadata={{
+            video_id: post.id,
+            video_title: post.data.video.title || post.data.title,
+          }}
+          aspectRatio={post.data.video.aspectRatio}
+          poster={post.data.video.thumbnail}
+        />
+        {post.data.video.title && (
+          <p class="text-sm text-muted mt-2 text-center italic">
+            {post.data.video.title}
+          </p>
+        )}
+      </div>
+    )}
+
+    <!-- Post Image (if no video and image exists) -->
+    {!post.data.video && post.data.image && (
+      <div class="mb-8">
+        <img
+          src={post.data.image}
+          alt={post.data.title}
+          class="w-full rounded-lg"
+          loading="eager"
+        />
+      </div>
+    )}
+
+    <!-- Post Content -->
+    <div class="prose prose-lg dark:prose-invert max-w-none">
+      <Content />
+    </div>
+
+    <!-- Post Footer -->
+    <footer class="mt-12 pt-8 border-t border-gray-200 dark:border-gray-800">
+      {post.data.tags && post.data.tags.length > 0 && (
+        <div class="mb-6">
+          <h3 class="text-sm font-semibold text-muted uppercase tracking-wider mb-3">
+            Tags
+          </h3>
+          <div class="flex flex-wrap gap-2">
+            {post.data.tags.map((tag: string) => (
+              <a
+                href={`/tag/${tag.toLowerCase().replace(/\s+/g, '-')}`}
+                class="inline-block px-3 py-1 text-sm bg-gray-100 dark:bg-gray-800 text-default rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              >
+                {tag}
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {post.data.updateDate && post.data.updateDate !== post.data.publishDate && (
+        <p class="text-sm text-muted">
+          Last updated: {post.data.updateDate.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          })}
+        </p>
+      )}
+    </footer>
+  </article>
+</PageLayout>

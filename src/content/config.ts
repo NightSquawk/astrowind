@@ -1,6 +1,19 @@
 import { z, defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
 
+// Mux asset schema (reusable)
+const muxAssetSchema = z
+  .object({
+    assetId: z.string().optional(),
+    playbackId: z.string(),
+    type: z.enum(['video', 'audio']),
+    title: z.string().optional(),
+    duration: z.number().optional(),
+    thumbnail: z.string().optional(),
+    aspectRatio: z.string().optional(),
+  })
+  .optional();
+
 const metadataDefinition = () =>
   z
     .object({
@@ -61,6 +74,9 @@ const postCollection = defineCollection({
     tags: z.array(z.string()).optional(),
     author: z.string().optional(),
 
+    // Mux video support
+    video: muxAssetSchema,
+
     metadata: metadataDefinition(),
   }),
 });
@@ -84,6 +100,8 @@ const podcastEpisodes = defineCollection({
 		image: z.string().optional(),
 		imageAlt: z.string().optional(),
 		backgroundImage: z.string().optional(),
+		// Mux audio support
+		audio: muxAssetSchema,
 		youtubeUrl: z.string().optional(),
 		spotifyUrl: z.string().optional(),
 		appleUrl: z.string().optional(),
@@ -109,6 +127,8 @@ const campaigns = defineCollection({
 		endDate: z.coerce.date(),
 		heroImage: z.string().optional(),
 		heroImageAlt: z.string().optional(),
+		// Mux video support for campaign videos
+		video: muxAssetSchema,
 		utmParams: z.object({
 			utm_source: z.string().optional(),
 			utm_medium: z.string().optional(),

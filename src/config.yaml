@@ -98,3 +98,16 @@ theme:
     dark:
       background: 'black'
       color: 'snow'
+
+# Mux Video & Audio Configuration
+mux:
+  enabled: true
+  defaultPlayerSettings:
+    autoplay: false
+    muted: false
+    loop: false
+    controls: true
+    preload: metadata
+  analytics:
+    trackPlayback: true
+    trackEngagement: true
