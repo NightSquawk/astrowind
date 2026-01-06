@@ -1,338 +1,437 @@
-# 🚀 AstroWind
+# 🚀 AstroWind - NightSquawk Tech Edition
 
-<img src="https://raw.githubusercontent.com/arthelokyo/.github/main/resources/astrowind/lighthouse-score.png" align="right"
-     alt="AstroWind Lighthouse Score" width="100" height="358">
+**A production-ready, multi-client template system built on AstroWind with enterprise-grade enhancements.**
 
-🌟 _Most *starred* & *forked* Astro theme in 2022, 2023 & 2024_. 🌟
+This is **NightSquawk Tech's** enhanced version of the popular [AstroWind](https://github.com/arthelokyo/astrowind) template. We've extended the base template with powerful features, modern UI components, comprehensive analytics, and development tools to create a robust foundation for all our client websites.
 
-**AstroWind** is a free and open-source template to make your website using **[Astro 5.0](https://astro.build/) + [Tailwind CSS](https://tailwindcss.com/)**. Ready to start a new project and designed taking into account web best practices.
+---
 
-- ✅ **Production-ready** scores in **PageSpeed Insights** reports.
-- ✅ Integration with **Tailwind CSS** supporting **Dark mode** and **_RTL_**.
-- ✅ **Fast and SEO friendly blog** with automatic **RSS feed**, **MDX** support, **Categories & Tags**, **Social Share**, ...
-- ✅ **Image Optimization** (using new **Astro Assets** and **Unpic** for Universal image CDN).
-- ✅ Generation of **project sitemap** based on your routes.
-- ✅ **Open Graph tags** for social media sharing.
-- ✅ **Analytics** built-in Google Analytics, and Splitbee integration.
+## 📋 Table of Contents
 
-<br>
+- [What We've Added](#-what-weve-added)
+- [Quick Start](#-quick-start)
+- [Features](#-features)
+- [Documentation](#-documentation)
+- [Development Tools](#-development-tools)
+- [Environment Setup](#-environment-setup)
+- [Deployment](#-deployment)
+- [Credits](#-credits)
 
-![AstroWind Theme Screenshot](https://raw.githubusercontent.com/arthelokyo/.github/main/resources/astrowind/screenshot-astrowind-1.0.png)
+---
 
-[![arthelokyo](https://custom-icon-badges.demolab.com/badge/made%20by%20-arthelokyo-556bf2?style=flat-square&logo=arthelokyo&logoColor=white&labelColor=101827)](https://github.com/arthelokyo)
-[![License](https://img.shields.io/github/license/arthelokyo/astrowind?style=flat-square&color=dddddd&labelColor=000000)](https://github.com/arthelokyo/astrowind/blob/main/LICENSE.md)
-[![Maintained](https://img.shields.io/badge/maintained%3F-yes-brightgreen.svg?style=flat-square)](https://github.com/arthelokyo)
-[![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat-square)](https://github.com/arthelokyo/astrowind#contributing)
-[![Known Vulnerabilities](https://snyk.io/test/github/arthelokyo/astrowind/badge.svg?style=flat-square)](https://snyk.io/test/github/arthelokyo/astrowind)
-[![Stars](https://img.shields.io/github/stars/arthelokyo/astrowind.svg?style=social&label=stars&maxAge=86400&color=ff69b4)](https://github.com/arthelokyo/astrowind)
-[![Forks](https://img.shields.io/github/forks/arthelokyo/astrowind.svg?style=social&label=forks&maxAge=86400&color=ff69b4)](https://github.com/arthelokyo/astrowind)
+## ✨ What We've Added
 
-<br>
+On top of the excellent AstroWind foundation, we've added:
 
-<details open>
-<summary>Table of Contents</summary>
+### 🎨 **UI Component Library**
+- **3 Icon Libraries**: Tabler, Material Design Icons (MDI), and Lucide icons
+- **shadcn-style Components**: Modern, accessible UI components with variants
+  - Button, Card, Badge, Input, Label, Textarea
+  - Built with Tailwind CSS and class-variance-authority
+  - Fully customizable and type-safe
 
-- [Demo](#demo)
-- [Upcoming: AstroWind 2.0 – We Need Your Vision!](#-upcoming-astrowind-20--we-need-your-vision)
-- [TL;DR](#tldr)
-- [Getting started](#getting-started)
-  - [Project structure](#project-structure)
-  - [Commands](#commands)
-  - [Configuration](#configuration)
-  - [Deploy](#deploy)
-- [Frequently Asked Questions](#frequently-asked-questions)
-- [Related Projects](#related-projects)
-- [Contributing](#contributing)
-- [Acknowledgements](#acknowledgements)
-- [License](#license)
+### 📊 **Analytics & Tracking**
+- **Microsoft Clarity**: Heatmaps and session recordings
+- **Google Tag Manager**: Container-based tag management
+- **Google Analytics 4**: Built-in with consent management
+- **Datadog RUM**: Real user monitoring
+- **GoHighLevel**: Marketing platform integration (configurable)
 
-</details>
+### 🔍 **SEO & Structured Data**
+- **JSON-LD Schema Helpers**: Type-safe utilities for 9+ schema types
+  - Organization, LocalBusiness, Article, Product, FAQ
+  - WebSite, BreadcrumbList, VideoObject, Event
+- **Schema Component**: Easy integration of structured data
+- **Open Graph Preview**: Dev tool to preview social media cards
 
-<br>
+### ♿ **Accessibility & Quality**
+- **Accessibility Checker**: Auto-scan for 8+ common a11y issues
+- **Color Contrast Checker**: WCAG 2.1 compliance validation (AA/AAA)
+- **Development Tools**: Only load in dev mode, auto-removed in production
 
-## Demo
+### 🎬 **Media Integration**
+- **Mux Video & Audio**: Professional streaming integration
+- **Google Maps**: Place search, geocoding, and custom markers
+- **Image Optimization**: Responsive images with lazy loading
 
-📌 [https://astrowind.vercel.app/](https://astrowind.vercel.app/)
+### 📝 **Content Management**
+- **Blog System**: Categories, tags, authors, reading time
+- **Podcast Episodes**: Rich metadata with streaming links
+- **Campaigns & Coupons**: UTM tracking and short URLs
+- **Redirect Middleware**: Analytics-tracked URL shortening
 
-<br>
+### 🎯 **Advanced Features**
+- **Photo Carousel**: Swiper.js gallery with lightbox
+- **Hero Carousel**: Auto-advancing hero sections
+- **Sidebar Navigation**: Active state detection
+- **Form Integrations**: iframe embeds for HubSpot, Salesforce, GoHighLevel
+- **Dynamic Theming**: Full customization via `config.yaml`
 
-## 🔔 Upcoming: AstroWind 2.0 – We Need Your Vision!
+---
 
-We're embarking on an exciting journey with **AstroWind 2.0**, and we want you to be a part of it! We're currently taking the first steps in developing this new version and your insights are invaluable. Join the discussion and share your feedback, ideas, and suggestions to help shape the future of **AstroWind**. Let's make **AstroWind 2.0** even better, together!
+## 🚀 Quick Start
 
-[Share Your Feedback in Our Discussion!](https://github.com/arthelokyo/astrowind/discussions/392)
+### Prerequisites
+- Node.js 18.0.0 or higher
+- npm 9.0.0 or higher
 
-<br>
+### Installation
 
-## TL;DR
+```bash
+# Clone this repository
+git clone https://github.com/NightSquawk/astrowind.git
+cd astrowind
 
-```shell
-npm create astro@latest -- --template arthelokyo/astrowind
+# Install dependencies
+npm install
+
+# Set up environment variables
+cp .env.example .env
+# Edit .env with your configuration
+
+# Start development server
+npm run dev
 ```
 
-## Getting started
+Visit `http://localhost:4321` to see your site.
 
-**AstroWind** tries to give you quick access to creating a website using [Astro 5.0](https://astro.build/) + [Tailwind CSS](https://tailwindcss.com/). It's a free theme which focuses on simplicity, good practices and high performance.
+### For New Clients
 
-Very little vanilla javascript is used only to provide basic functionality so that each developer decides which framework (React, Vue, Svelte, Solid JS...) to use and how to approach their goals.
+```bash
+# Run the client setup script
+bash .github/scripts/setup-client.sh  # Linux/Mac
+# or
+.github/scripts/setup-client.ps1      # Windows
 
-In this version the template supports all the options in the `output` configuration, `static`, `hybrid` and `server`, but the blog only works with `prerender = true`. We are working on the next version and aim to make it fully compatible with SSR.
-
-### Project structure
-
-Inside **AstroWind** template, you'll see the following folders and files:
-
-```
-/
-├── public/
-│   ├── _headers
-│   └── robots.txt
-├── src/
-│   ├── assets/
-│   │   ├── favicons/
-│   │   ├── images/
-│   │   └── styles/
-│   │       └── tailwind.css
-│   ├── components/
-│   │   ├── blog/
-│   │   ├── common/
-│   │   ├── ui/
-│   │   ├── widgets/
-│   │   │   ├── Header.astro
-│   │   │   └── ...
-│   │   ├── CustomStyles.astro
-│   │   ├── Favicons.astro
-│   │   └── Logo.astro
-│   ├── content/
-│   │   ├── post/
-│   │   │   ├── post-slug-1.md
-│   │   │   ├── post-slug-2.mdx
-│   │   │   └── ...
-│   │   └-- config.ts
-│   ├── layouts/
-│   │   ├── Layout.astro
-│   │   ├── MarkdownLayout.astro
-│   │   └── PageLayout.astro
-│   ├── pages/
-│   │   ├── [...blog]/
-│   │   │   ├── [category]/
-│   │   │   ├── [tag]/
-│   │   │   ├── [...page].astro
-│   │   │   └── index.astro
-│   │   ├── index.astro
-│   │   ├── 404.astro
-│   │   ├-- rss.xml.ts
-│   │   └── ...
-│   ├── utils/
-│   ├── config.yaml
-│   └── navigation.js
-├── package.json
-├── astro.config.ts
-└── ...
+# Update configuration
+# Edit src/config.yaml with client details
+# Replace src/components/Logo.astro with client logo
+# Add content to src/content/
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+---
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+## 🎯 Features
 
-Any static assets, like images, can be placed in the `public/` directory if they do not require any transformation or in the `assets/` directory if they are imported directly.
+### Icon Libraries
+```astro
+import { Icon } from 'astro-icon/components';
 
-[![Edit AstroWind on CodeSandbox](https://codesandbox.io/static/img/play-codesandbox.svg)](https://githubbox.com/arthelokyo/astrowind/tree/main) [![Open in Gitpod](https://svgshare.com/i/xdi.svg)](https://gitpod.io/?on=gitpod#https://github.com/arthelokyo/astrowind) [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/arthelokyo/astrowind)
+<Icon name="lucide:heart" class="w-6 h-6" />
+<Icon name="mdi:email" class="w-5 h-5" />
+<Icon name="tabler:user" class="w-4 h-4" />
+```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file `README.md`. Update `src/config.yaml` and contents. Have fun!
+### shadcn-style UI Components
+```astro
+import Button from '~/components/ui/shadcn/Button.astro';
+import Card from '~/components/ui/shadcn/Card.astro';
+import Badge from '~/components/ui/shadcn/Badge.astro';
 
-<br>
+<Card>
+  <CardHeader>
+    <CardTitle>Hello <Badge variant="success">New</Badge></CardTitle>
+  </CardHeader>
+  <CardContent>
+    <Button variant="outline" size="lg">Learn More</Button>
+  </CardContent>
+</Card>
+```
 
-### Commands
+**Demo:** Visit `/shadcn-demo` in development mode
 
-All commands are run from the root of the project, from a terminal:
+### JSON-LD Schema
+```astro
+import Schema from '~/components/common/Schema.astro';
+import { createArticleSchema, createLocalBusinessSchema } from '~/utils/schema';
 
-| Command             | Action                                             |
-| :------------------ | :------------------------------------------------- |
-| `npm install`       | Installs dependencies                              |
-| `npm run dev`       | Starts local dev server at `localhost:4321`        |
-| `npm run build`     | Build your production site to `./dist/`            |
-| `npm run preview`   | Preview your build locally, before deploying       |
-| `npm run check`     | Check your project for errors                      |
-| `npm run fix`       | Run Eslint and format codes with Prettier          |
-| `npm run astro ...` | Run CLI commands like `astro add`, `astro preview` |
+const schema = createArticleSchema({
+  headline: 'My Article',
+  datePublished: '2024-01-15T08:00:00Z',
+  author: { '@type': 'Person', name: 'Author Name' },
+  publisher: { name: 'Your Site' },
+  url: Astro.url.href,
+});
 
-<br>
+<Schema schema={schema} />
+```
 
-### Multi-Client Template System
+**Demo:** Visit `/schema-demo` in development mode
 
-**AstroWind** now includes a powerful multi-client template system that allows you to:
+### Development Tools
+```astro
+import A11yChecker from '~/components/dev/A11yChecker.astro';
+import OGPreview from '~/components/dev/OGPreview.astro';
 
-- ✅ **Reusable Component Library** - Bootstrap-like components that work across all clients
-- ✅ **Dynamic Theme System** - Change colors, fonts, and styling via `config.yaml`
-- ✅ **Client Override System** - Override any component without modifying base template
-- ✅ **Easy Customization** - Four levels of customization from config-only to full custom code
+{import.meta.env.DEV && <A11yChecker />}
+{import.meta.env.DEV && <OGPreview position="bottom-right" />}
+```
 
-**Quick Start for New Clients:**
-1. Clone this template to your client repository
-2. Run setup script: `bash .github/scripts/setup-client.sh` (or `.ps1` on Windows)
-3. Update `src/config.yaml` with client info and theme colors
-4. Add content and customize as needed
+**Demo:** Visit `/dev-tools-demo` in development mode
 
-**Documentation:**
-- 📖 **Full Guide:** See `TEMPLATE_GUIDE.md` for complete documentation
-- 🚀 **Quick Start:** See `QUICK_START.md` for rapid setup
-- 🧩 **Components:** See `src/components/README.md` for component library docs
+---
 
-**Theme Configuration:**
-All styling is controlled via `src/config.yaml`:
+## 📚 Documentation
+
+- **`CLAUDE.md`** - Comprehensive template documentation and architecture guide
+- **`src/plugins/mux/README.md`** - Mux video/audio integration guide
+- **`.env.example`** - Environment variable reference
+
+### Key Documentation Sections
+
+- **Multi-Client Template System** - How to customize for each client
+- **Theme System** - Dynamic theming via config.yaml
+- **Component Architecture** - Widget structure and patterns
+- **Content Collections** - Blog, podcasts, campaigns, coupons
+- **Redirect System** - Analytics-tracked URL shortening
+- **Analytics Integration** - Multiple analytics platforms
+- **SEO Best Practices** - Structured data and meta tags
+
+---
+
+## 🛠 Development Tools
+
+### Accessibility Checker
+**Location:** `src/components/dev/A11yChecker.astro`
+
+Automatically scans for:
+- Missing alt text on images
+- Missing form labels and ARIA labels
+- Empty links and buttons
+- Duplicate IDs
+- Heading hierarchy issues
+- And more...
+
+### Open Graph Preview
+**Location:** `src/components/dev/OGPreview.astro`
+
+Preview social media cards:
+- Facebook/Meta
+- Twitter/X
+- LinkedIn
+
+### Color Contrast Checker
+**Location:** `src/utils/contrast.ts`
+
+WCAG 2.1 compliance checking:
+```typescript
+import { getContrastRatio, getWCAGCompliance } from '~/utils/contrast';
+
+const ratio = getContrastRatio('#ffffff', '#000000');
+const compliance = getWCAGCompliance(ratio, 'normal');
+// { aa: true, aaa: true, level: 'AAA', message: '...' }
+```
+
+**Standards:**
+- Level AA: 4.5:1 (normal), 3:1 (large)
+- Level AAA: 7:1 (normal), 4.5:1 (large)
+
+---
+
+## 🔧 Environment Setup
+
+Create a `.env` file (see `.env.example` for full reference):
+
+```bash
+# Site Configuration
+PUBLIC_SITE_URL=https://yoursite.com
+
+# Analytics
+PUBLIC_GOOGLE_ANALYTICS_ID=G-XXXXXXXXXX
+PUBLIC_GOOGLE_TAG_MANAGER_ID=GTM-XXXXXXX
+PUBLIC_MICROSOFT_CLARITY_PROJECT_ID=xxxxx
+PUBLIC_DATADOG_APPLICATION_ID=
+PUBLIC_DATADOG_CLIENT_TOKEN=
+
+# Maps
+PUBLIC_GOOGLE_MAPS_API_KEY=
+
+# Optional: GoHighLevel
+PUBLIC_GO_HIGH_LEVEL_TRACKING_ID=
+PUBLIC_GO_HIGH_LEVEL_SCRIPT_URL=
+
+# Mux (keep secret!)
+MUX_TOKEN_ID=your-token-id
+MUX_TOKEN_SECRET=your-token-secret
+```
+
+---
+
+## 📦 Commands
+
+| Command | Action |
+|---------|--------|
+| `npm install` | Install dependencies |
+| `npm run dev` | Start dev server at `localhost:4321` |
+| `npm run build` | Build production site to `./dist/` |
+| `npm run preview` | Preview production build |
+| `npm run check` | Run Astro, ESLint, and Prettier checks |
+| `npm run fix` | Auto-fix ESLint and Prettier issues |
+| `npm run deploy` | Build and deploy to Cloudflare Workers |
+
+---
+
+## 🚢 Deployment
+
+### Cloudflare Workers (Recommended)
+
+```bash
+# Build and deploy
+npm run deploy
+
+# Or manually
+npm run build
+wrangler deploy
+```
+
+**Configuration:** Edit `wrangler.json` for environment variables and settings.
+
+### Other Platforms
+
+The template works with:
+- **Vercel** - Deploy with one click
+- **Netlify** - Deploy with one click
+- **Any static host** - Upload the `dist/` folder
+
+---
+
+## 📈 Analytics Integration
+
+### Google Analytics 4
+Set `PUBLIC_GOOGLE_ANALYTICS_ID` in `.env`
+
+### Google Tag Manager
+Set `PUBLIC_GOOGLE_TAG_MANAGER_ID` in `.env`
+Runs in parallel with GA4, no conflicts
+
+### Microsoft Clarity
+Set `PUBLIC_MICROSOFT_CLARITY_PROJECT_ID` in `.env`
+Get your project ID from [clarity.microsoft.com](https://clarity.microsoft.com/)
+
+### Datadog RUM
+Set `PUBLIC_DATADOG_APPLICATION_ID` and `PUBLIC_DATADOG_CLIENT_TOKEN`
+
+All analytics respect Google Consent Mode v2 and integrate with Termly cookie consent.
+
+---
+
+## 🎨 Theme Customization
+
+Edit `src/config.yaml`:
 
 ```yaml
 theme:
   colors:
-    primary: 'rgb(1 97 239)'      # Your brand color
+    primary: 'rgb(1 97 239)'      # Brand color
     secondary: 'rgb(1 84 207)'
     accent: 'rgb(109 40 217)'
+    text:
+      default: 'rgb(16 16 16)'
+      muted: 'rgb(16 16 16 / 66%)'
   fonts:
     sans: 'Inter Variable'
     heading: 'Inter Variable'
 ```
 
-Components automatically use these theme values - no code changes needed!
+All components automatically use these theme values—no code changes needed!
 
-### Configuration
+---
 
-Basic configuration file: `./src/config.yaml`
+## 🧪 Demo Pages (Dev Mode Only)
 
-```yaml
-site:
-  name: 'Example'
-  site: 'https://example.com'
-  base: '/' # Change this if you need to deploy to Github Pages, for example
-  trailingSlash: false # Generate permalinks with or without "/" at the end
+These pages are only visible in development and demonstrate template features:
 
-  googleSiteVerificationId: false # Or some value,
+- `/shadcn-demo` - shadcn-style UI components showcase
+- `/schema-demo` - JSON-LD structured data examples
+- `/dev-tools-demo` - Development tools demonstration
+- `/mux-demo` - Mux video/audio integration examples
 
-# Default SEO metadata
-metadata:
-  title:
-    default: 'Example'
-    template: '%s — Example'
-  description: 'This is the default meta description of Example website'
-  robots:
-    index: true
-    follow: true
-  openGraph:
-    site_name: 'Example'
-    images:
-      - url: '~/assets/images/default.png'
-        width: 1200
-        height: 628
-    type: website
-  twitter:
-    handle: '@twitter_user'
-    site: '@twitter_user'
-    cardType: summary_large_image
+Remove these before deploying to production or move to `src/client/pages/` for client-specific demos.
 
-i18n:
-  language: en
-  textDirection: ltr
+---
 
-apps:
-  blog:
-    isEnabled: true # If the blog will be enabled
-    postsPerPage: 6 # Number of posts per page
+## 🏗 Project Structure
 
-    post:
-      isEnabled: true
-      permalink: '/blog/%slug%' # Variables: %slug%, %year%, %month%, %day%, %hour%, %minute%, %second%, %category%
-      robots:
-        index: true
-
-    list:
-      isEnabled: true
-      pathname: 'blog' # Blog main path, you can change this to "articles" (/articles)
-      robots:
-        index: true
-
-    category:
-      isEnabled: true
-      pathname: 'category' # Category main path /category/some-category, you can change this to "group" (/group/some-category)
-      robots:
-        index: true
-
-    tag:
-      isEnabled: true
-      pathname: 'tag' # Tag main path /tag/some-tag, you can change this to "topics" (/topics/some-category)
-      robots:
-        index: false
-
-    isRelatedPostsEnabled: true # If a widget with related posts is to be displayed below each post
-    relatedPostsCount: 4 # Number of related posts to display
-
-analytics:
-  vendors:
-    googleAnalytics:
-      id: null # or "G-XXXXXXXXXX"
-
-ui:
-  theme: 'system' # Values: "system" | "light" | "dark" | "light:only" | "dark:only"
+```
+/
+├── src/
+│   ├── components/
+│   │   ├── ui/shadcn/          # shadcn-style components
+│   │   ├── dev/                # Dev-only tools
+│   │   ├── tracking/           # Analytics components
+│   │   ├── widgets/            # Page sections
+│   │   └── common/             # Shared components
+│   ├── content/                # Content collections
+│   │   ├── post/               # Blog posts
+│   │   ├── podcast-episodes/   # Podcast episodes
+│   │   ├── campaigns/          # Marketing campaigns
+│   │   └── coupons/            # Promotional coupons
+│   ├── plugins/                # Modular plugins
+│   │   └── mux/                # Mux integration
+│   ├── utils/                  # Utilities
+│   │   ├── schema.ts           # JSON-LD helpers
+│   │   ├── contrast.ts         # WCAG contrast checker
+│   │   └── cn.ts               # className utility
+│   ├── pages/                  # Routes
+│   ├── layouts/                # Page layouts
+│   └── config.yaml             # Site configuration
+├── vendor/integration/         # Custom Astro integration
+├── wrangler.json              # Cloudflare Workers config
+└── astro.config.mts           # Astro configuration
 ```
 
-<br>
+---
 
-#### Customize Design
+## 💡 Best Practices
 
-To customize Font families, Colors or more Elements refer to the following files:
+- **Never hardcode colors/fonts** - Use theme CSS variables
+- **Configuration over code** - Prefer `config.yaml` changes
+- **Use content collections** - Don't hardcode content in components
+- **Client overrides** - Put client-specific code in `src/client/`
+- **Dev tools** - Use built-in accessibility and preview tools
+- **Test themes** - Verify both light and dark modes
+- **Structured data** - Use schema helpers for better SEO
 
-- `src/components/CustomStyles.astro`
-- `src/assets/styles/tailwind.css`
+---
 
-### Deploy
+## 🤝 Credits
 
-#### Deploy to production (manual)
+### Base Template
+- **[AstroWind](https://github.com/arthelokyo/astrowind)** by Arthelokyo - The excellent foundation this template builds upon
 
-You can create an optimized production build with:
+### Enhanced by
+- **[NightSquawk Tech](https://github.com/NightSquawk)** - Enterprise enhancements, component library, dev tools, and multi-client system
 
-```shell
-npm run build
-```
+### Built With
+- **[Astro 5.0](https://astro.build/)** - The web framework for content-driven websites
+- **[Tailwind CSS](https://tailwindcss.com/)** - Utility-first CSS framework
+- **[Swiper.js](https://swiperjs.com/)** - Modern mobile touch slider
+- **[Mux](https://mux.com/)** - Video/audio streaming infrastructure
+- **[Iconify](https://iconify.design/)** - Unified icon framework
 
-Now, your website is ready to be deployed. All generated files are located at
-`dist` folder, which you can deploy the folder to any hosting service you
-prefer.
+---
 
-#### Deploy to Netlify
+## 📄 License
 
-Clone this repository on your own GitHub account and deploy it to Netlify:
+This enhanced template maintains the MIT license from the original AstroWind project.
 
-[![Netlify Deploy button](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/arthelokyo/astrowind)
+**Original AstroWind:** [MIT License](./LICENSE.md)
 
-#### Deploy to Vercel
+---
 
-Clone this repository on your own GitHub account and deploy to Vercel:
+## 🆘 Support
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Farthelokyo%2Fastrowind)
+For issues or questions about:
+- **Base template features**: See [AstroWind repository](https://github.com/arthelokyo/astrowind)
+- **NightSquawk enhancements**: Open an issue in this repository
+- **Client-specific customization**: Refer to `CLAUDE.md` documentation
 
-<br>
+---
 
-## Frequently Asked Questions
+<div align="center">
 
-- Why?
--
--
+**Built with ❤️ by NightSquawk Tech**
 
-<br>
+Enhanced from the amazing [AstroWind](https://github.com/arthelokyo/astrowind) template
 
-## Related projects
-
-- [TailNext](https://tailnext.vercel.app/) - Free template using Next.js 14 and Tailwind CSS with the new App Router.
-- [Qwind](https://qwind.pages.dev/) - Free template to make your website using Qwik + Tailwind CSS.
-
-## Contributing
-
-If you have any ideas, suggestions or find any bugs, feel free to open a discussion, an issue or create a pull request.
-That would be very useful for all of us and we would be happy to listen and take action.
-
-## Acknowledgements
-
-Initially created by **Arthelokyo** and maintained by a community of [contributors](https://github.com/arthelokyo/astrowind/graphs/contributors).
-
-## License
-
-**AstroWind** is licensed under the MIT license — see the [LICENSE](./LICENSE.md) file for details.
+</div>
