@@ -2,3 +2,11 @@ dist
 node_modules
 .github
 .changeset
+.agents
+.claude
+.specstory
+.wrangler
+AGENTS.md
+CLAUDE.md
+CURSOR_MEMORY.md
+src/pages/redirect.astro

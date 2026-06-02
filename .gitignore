@@ -22,3 +22,7 @@ pnpm-debug.log*
 pnpm-lock.yaml
 
 .astro
+.wrangler/
+.claude/
+.specstory/
+CURSOR_MEMORY.md

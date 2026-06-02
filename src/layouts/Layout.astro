@@ -10,6 +10,8 @@ import ApplyColorMode from '~/components/common/ApplyColorMode.astro';
 import Metadata from '~/components/common/Metadata.astro';
 import SiteVerification from '~/components/common/SiteVerification.astro';
 import Analytics from '~/components/common/Analytics.astro';
+import GoogleTagManager from '~/components/tracking/GoogleTagManager.astro';
+import MicrosoftClarity from '~/components/tracking/MicrosoftClarity.astro';
 import BasicScripts from '~/components/common/BasicScripts.astro';
 
 // Comment the line below to disable View Transitions
@@ -35,6 +37,8 @@ const { language, textDirection } = I18N;
     <Metadata {...metadata} />
     <SiteVerification />
     <Analytics />
+    <GoogleTagManager />
+    <MicrosoftClarity />
 
     <link rel="preconnect" href="https://images.unsplash.com" />
 
@@ -43,8 +47,14 @@ const { language, textDirection } = I18N;
   </head>
 
   <body class="antialiased text-default bg-page tracking-tight">
+    <GoogleTagManager position="body" />
+
     <slot />
 
     <BasicScripts />
+
+    <script>
+      import '~/scripts/analytics-events';
+    </script>
   </body>
 </html>

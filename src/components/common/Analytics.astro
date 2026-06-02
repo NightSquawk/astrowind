@@ -15,7 +15,7 @@ const scriptType = partytown ? 'text/partytown' : undefined;
     window.gtag = function () {
       dataLayer.push(arguments);
     };
-    window.gtag('js', new Date());
-    window.gtag('config', d);
+    window.gtag?.('js', new Date());
+    window.gtag?.('config', d);
   }
 </script>

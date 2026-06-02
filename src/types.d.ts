@@ -2,33 +2,45 @@ import type { AstroComponentFactory } from 'astro/runtime/server/index.js';
 import type { HTMLAttributes, ImageMetadata } from 'astro/types';
 
 export interface Post {
-  /** Unique ID identifying the post. */
+  /** A unique ID number that identifies a post. */
   id: string;
-  /** URL-friendly slug derived from the post name. */
+
+  /** A post’s unique slug – part of the post’s URL based on its name, i.e. a post called “My Sample Page” has a slug “my-sample-page”. */
   slug: string;
-  /** Fully resolved permalink, computed from the configured pattern. */
+
+  /**  */
   permalink: string;
 
+  /**  */
   publishDate: Date;
+  /**  */
   updateDate?: Date;
 
+  /**  */
   title: string;
   /** Optional summary of post content. */
   excerpt?: string;
+  /**  */
   image?: ImageMetadata | string;
 
+  /**  */
   category?: Taxonomy;
+  /**  */
   tags?: Taxonomy[];
+  /**  */
   author?: string;
 
+  /**  */
   metadata?: MetaData;
 
+  /**  */
   draft?: boolean;
 
-  /** Rendered Astro component factory for the post body. */
+  /**  */
   Content?: AstroComponentFactory;
+  content?: string;
 
-  /** Estimated reading time in minutes. */
+  /**  */
   readingTime?: number;
 }
 
@@ -79,6 +91,11 @@ export interface MetaDataTwitter {
 export interface Image {
   src: string;
   alt?: string;
+}
+
+export interface Video {
+  src: string;
+  type?: string;
 }
 
 export interface Widget {
@@ -172,6 +189,13 @@ export interface CallToAction extends Omit<HTMLAttributes<'a'>, 'slot'> {
   type?: 'button' | 'submit' | 'reset';
 }
 
+export interface ItemGrid {
+  items?: Array<Item>;
+  columns?: number;
+  defaultIcon?: string;
+  classes?: Record<string, string>;
+}
+
 export interface Collapse {
   iconUp?: string;
   iconDown?: string;
@@ -219,14 +243,20 @@ export interface Brands extends Omit<Headline, 'classes'>, Widget {
 
 export interface Features extends Omit<Headline, 'classes'>, Widget {
   image?: string | unknown;
+  video?: Video;
   items?: Array<Item>;
   columns?: number;
   defaultIcon?: string;
+  callToAction1?: CallToAction;
+  callToAction2?: CallToAction;
+  isReversed?: boolean;
   isBeforeContent?: boolean;
   isAfterContent?: boolean;
 }
 
 export interface Faqs extends Omit<Headline, 'classes'>, Widget {
+  iconUp?: string;
+  iconDown?: string;
   items?: Array<Item>;
   columns?: number;
 }
@@ -249,3 +279,90 @@ export interface Content extends Omit<Headline, 'classes'>, Widget {
 }
 
 export interface Contact extends Omit<Headline, 'classes'>, Form, Widget {}
+
+// HERO CAROUSEL
+export interface HeroSlide {
+  title: string;
+  subtitle?: string;
+  content?: string;
+  primaryCTA?: CallToAction;
+  secondaryCTA?: CallToAction;
+  backgroundImage?: string | ImageMetadata;
+  overlayOpacity?: number; // 0-100
+}
+
+export interface HeroCarousel extends Widget {
+  slides: HeroSlide[];
+  autoAdvance?: boolean; // default: true
+  interval?: number; // milliseconds, default: 5000
+  showDots?: boolean; // default: true
+  showArrows?: boolean; // default: true
+  transitionSpeed?: number; // milliseconds, default: 600
+}
+
+// PHOTO CAROUSEL
+export interface GalleryImage {
+  src: string | ImageMetadata;
+  alt: string;
+  caption?: string;
+  thumbnail?: string | ImageMetadata; // Optional separate thumbnail
+}
+
+export interface PhotoCarousel extends Headline, Widget {
+  images: GalleryImage[];
+  columns?: number; // default: 4 (desktop)
+  showThumbnails?: boolean; // default: true
+  lightboxEnabled?: boolean; // default: true
+  autoplay?: boolean; // default: false
+  gap?: number; // gap between images in px, default: 16
+}
+
+// GOOGLE MAPS
+export interface GoogleMap extends Headline, Widget {
+  placeName?: string; // Business name for place search
+  address?: string; // Fallback address
+  coordinates?: { lat: number; lng: number }; // Fallback coordinates
+  zoom?: number; // default: 15
+  height?: string; // CSS height, default: '450px'
+  markerTitle?: string; // Custom marker title
+  showInfoWindow?: boolean; // default: true
+  mapTypeControl?: boolean; // default: false
+  streetViewControl?: boolean; // default: false
+  fullscreenControl?: boolean; // default: true
+}
+
+// SIDEBAR NAVIGATION
+export interface SidebarLink {
+  text: string;
+  href: string;
+  icon?: string; // Tabler icon name
+}
+
+export interface SidebarSection {
+  title?: string;
+  links: SidebarLink[];
+}
+
+export interface Sidebar extends Headline, Widget {
+  sections: SidebarSection[];
+  callToAction?: {
+    title?: string;
+    content?: string;
+    button?: CallToAction;
+  };
+  position?: 'left' | 'right'; // default: 'left'
+  stickyOffset?: number; // offset from top in px, default: 80
+  collapsible?: boolean; // mobile collapse, default: true
+}
+
+// IFRAME EMBED
+export interface IframeEmbed {
+  src: string; // Form URL
+  title?: string; // Accessibility title
+  height?: string; // CSS height, default: '600px'
+  width?: string; // CSS width, default: '100%'
+  loading?: 'lazy' | 'eager'; // default: 'lazy'
+  sandbox?: string[]; // iframe sandbox attributes
+  scriptUrl?: string; // Optional external script for auto-resize
+  onLoad?: string; // Optional JS to run on load
+}

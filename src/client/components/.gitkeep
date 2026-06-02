@@ -1,0 +1,2 @@
+# Place client-specific components here
+# Example: src/client/components/CustomStyles.astro to override base theme

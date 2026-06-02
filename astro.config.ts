@@ -11,11 +11,13 @@ import mdx from '@astrojs/mdx';
 import partytown from '@astrojs/partytown';
 import icon from 'astro-icon';
 import compress from 'astro-compress';
+import cloudflare from '@astrojs/cloudflare';
 import type { AstroIntegration } from 'astro';
 
 import astrowind from './vendor/integration';
+import clientOverridesPlugin from './vendor/integration/vite-plugin-client-overrides';
 
-import { readingTimeRemarkPlugin, responsiveTablesRehypePlugin } from './src/utils/frontmatter';
+import { lazyImagesRehypePlugin, readingTimeRemarkPlugin, responsiveTablesRehypePlugin } from './src/utils/frontmatter';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -25,13 +27,22 @@ const whenExternalScripts = (items: (() => AstroIntegration) | (() => AstroInteg
 
 export default defineConfig({
   output: 'static',
+  adapter: cloudflare(),
+  trailingSlash: 'ignore',
 
   integrations: [
-    sitemap(),
+    sitemap({
+      changefreq: 'weekly',
+      priority: 0.7,
+      lastmod: new Date(),
+      entryLimit: 50000,
+    }),
     mdx(),
     icon({
       include: {
         tabler: ['*'],
+        mdi: ['*'],
+        lucide: ['*'],
         'flat-color-icons': [
           'template',
           'gallery',
@@ -87,12 +98,12 @@ export default defineConfig({
   markdown: {
     processor: unified({
       remarkPlugins: [readingTimeRemarkPlugin],
-      rehypePlugins: [responsiveTablesRehypePlugin],
+      rehypePlugins: [responsiveTablesRehypePlugin, lazyImagesRehypePlugin],
     }),
   },
 
   vite: {
-    plugins: [tailwindcss()],
+    plugins: [tailwindcss(), clientOverridesPlugin()],
     resolve: {
       alias: {
         '~': path.resolve(__dirname, './src'),

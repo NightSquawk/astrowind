@@ -11,13 +11,14 @@ export type Config = {
   };
   ui?: unknown;
   analytics?: unknown;
+  theme?: ThemeConfig;
 };
 
 export interface SiteConfig {
   name: string;
   site?: string;
   base?: string;
-  trailingSlash?: boolean;
+  trailingSlash?: boolean | 'always' | 'never' | 'ignore';
   googleSiteVerificationId?: string;
 }
 export interface MetaDataConfig extends Omit<MetaData, 'title'> {
@@ -80,6 +81,37 @@ export interface AnalyticsConfig {
 
 export interface UIConfig {
   theme: string;
+}
+
+export interface ThemeConfig {
+  colors: {
+    primary: string;
+    secondary: string;
+    accent: string;
+    text: {
+      heading: string;
+      default: string;
+      muted: string;
+    };
+    textDark?: {
+      heading: string;
+      default: string;
+      muted: string;
+    };
+    background: {
+      page: string;
+      pageDark: string;
+    };
+  };
+  fonts: {
+    sans: string;
+    serif: string;
+    heading: string;
+  };
+  selection: {
+    light: { background: string; color?: string };
+    dark: { background: string; color?: string };
+  };
 }
 
 const DEFAULT_SITE_NAME = 'Website';
@@ -193,6 +225,41 @@ const getAnalytics = (config: Config) => {
   return merge({}, _default, config?.analytics ?? {}) as AnalyticsConfig;
 };
 
+const getTheme = (config: Config) => {
+  const _default = {
+    colors: {
+      primary: 'rgb(1 97 239)',
+      secondary: 'rgb(1 84 207)',
+      accent: 'rgb(109 40 217)',
+      text: {
+        heading: 'rgb(0 0 0)',
+        default: 'rgb(16 16 16)',
+        muted: 'rgb(16 16 16 / 66%)',
+      },
+      textDark: {
+        heading: 'rgb(247, 248, 248)',
+        default: 'rgb(229 236 246)',
+        muted: 'rgb(229 236 246 / 66%)',
+      },
+      background: {
+        page: 'rgb(255 255 255)',
+        pageDark: 'rgb(3 6 32)',
+      },
+    },
+    fonts: {
+      sans: 'Inter Variable',
+      serif: 'Inter Variable',
+      heading: 'Inter Variable',
+    },
+    selection: {
+      light: { background: 'lavender' },
+      dark: { background: 'black', color: 'snow' },
+    },
+  };
+
+  return merge({}, _default, config?.theme ?? {}) as ThemeConfig;
+};
+
 export default (config: Config) => ({
   SITE: getSite(config),
   I18N: getI18N(config),
@@ -200,4 +267,5 @@ export default (config: Config) => ({
   APP_BLOG: getAppBlog(config),
   UI: getUI(config),
   ANALYTICS: getAnalytics(config),
+  THEME: getTheme(config),
 });

@@ -45,6 +45,18 @@
   background-color: var(--aw-color-bg-page);
 }
 
+@utility bg-page-dark-overlay {
+  background-color: var(--aw-color-bg-page-dark-overlay, rgb(3 6 32 / 90%));
+}
+
+@utility border-card {
+  border-color: var(--aw-color-border-card, rgb(255 255 255 / 16%));
+}
+
+@utility shadow-card {
+  box-shadow: var(--aw-shadow-card, 0 4px 30px rgba(0, 0, 0, 0.1));
+}
+
 @utility text-page {
   color: var(--aw-color-text-page);
 }
