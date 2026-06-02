@@ -7,6 +7,9 @@ import Button from '~/components/ui/Button.astro';
 
 import { getHomePermalink } from '~/utils/permalinks';
 import { trimSlash, getAsset } from '~/utils/permalinks';
+import { DEFAULT_LOCALE, type Locale } from '~/i18n/config';
+import { getAlternateLocaleLinks, normalizeLocale } from '~/i18n/utils';
+import { getUiStrings } from '~/i18n/ui';
 import type { CallToAction } from '~/types';
 
 interface Link {
@@ -29,6 +32,8 @@ export interface Props {
   isFullWidth?: boolean;
   showToggleTheme?: boolean;
   showRssFeed?: boolean;
+  showLanguageSwitcher?: boolean;
+  locale?: Locale | string;
   position?: string;
 }
 
@@ -41,10 +46,15 @@ const {
   isFullWidth = false,
   showToggleTheme = false,
   showRssFeed = false,
+  showLanguageSwitcher = false,
+  locale: requestedLocale = DEFAULT_LOCALE,
   position = 'center',
 } = Astro.props;
 
+const locale = normalizeLocale(requestedLocale);
+const ui = getUiStrings(locale);
 const currentPath = `/${trimSlash(new URL(Astro.url).pathname)}`;
+const alternateLocaleLinks = getAlternateLocaleLinks(Astro.url.pathname);
 ---
 
 <header
@@ -71,7 +81,7 @@ const currentPath = `/${trimSlash(new URL(Astro.url).pathname)}`;
     ]}
   >
     <div class:list={[{ 'mr-auto rtl:mr-0 rtl:ml-auto': position === 'right' }, 'flex justify-between']}>
-      <a class="flex items-center" href={getHomePermalink()}>
+      <a class="flex items-center" href={getHomePermalink(locale)}>
         <Logo />
       </a>
       <div class="flex items-center md:hidden">
@@ -80,7 +90,7 @@ const currentPath = `/${trimSlash(new URL(Astro.url).pathname)}`;
     </div>
     <nav
       class="items-center w-full md:w-auto hidden md:flex md:mx-5 text-default overflow-y-auto overflow-x-hidden md:overflow-y-visible md:overflow-x-auto md:justify-self-center"
-      aria-label="Main navigation"
+      aria-label={ui.mainNavigationLabel}
     >
       <ul
         class="flex flex-col md:flex-row md:self-center w-full md:w-auto text-xl md:text-[0.9375rem] tracking-[0.01rem] font-medium md:justify-center"
@@ -139,10 +149,37 @@ const currentPath = `/${trimSlash(new URL(Astro.url).pathname)}`;
         <div class="flex">
           {showToggleTheme && <ToggleTheme iconClass="w-6 h-6 md:w-5 md:h-5 md:inline-block" />}
           {
+            showLanguageSwitcher && (
+              <div
+                class="mx-1 inline-flex items-center rounded-lg border border-gray-200 bg-white/80 p-0.5 text-xs font-semibold text-muted shadow-sm dark:border-gray-700 dark:bg-gray-900/70 dark:text-gray-300"
+                aria-label={ui.languageSwitcherLabel}
+              >
+                <Icon name="lucide:languages" class="mx-1 h-4 w-4" aria-hidden="true" />
+                {alternateLocaleLinks.map((item) => (
+                  <a
+                    class:list={[
+                      'rounded-md px-2 py-1 transition-colors hover:bg-gray-100 hover:text-link dark:hover:bg-gray-800 dark:hover:text-white',
+                      {
+                        'bg-primary text-white hover:bg-primary hover:text-white dark:text-white':
+                          item.locale === locale,
+                      },
+                    ]}
+                    href={item.href}
+                    hreflang={item.language}
+                    aria-current={item.locale === locale ? 'page' : undefined}
+                    aria-label={`${ui.languageSwitcherLabel}: ${item.label}`}
+                  >
+                    {item.shortLabel}
+                  </a>
+                ))}
+              </div>
+            )
+          }
+          {
             showRssFeed && (
               <a
                 class="text-muted dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-2.5 inline-flex items-center"
-                aria-label="RSS Feed"
+                aria-label={ui.rssFeedLabel}
                 href={getAsset('/rss.xml')}
               >
                 <Icon name="tabler:rss" class="w-5 h-5" />

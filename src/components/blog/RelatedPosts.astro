@@ -22,9 +22,9 @@ const relatedPosts = post.tags ? await getRelatedPosts(post, 4) : [];
         container:
           'pt-0 lg:pt-0 md:pt-0 intersect-once intersect-quarter motion-safe:md:opacity-0 motion-safe:md:intersect:animate-fade',
       }}
-      title="Related Posts"
-      linkText="View All Posts"
-      linkUrl={getBlogPermalink()}
+      title={post.locale === 'es' ? 'Publicaciones relacionadas' : 'Related Posts'}
+      linkText={post.locale === 'es' ? 'Ver todas las publicaciones' : 'View All Posts'}
+      linkUrl={getBlogPermalink(post.locale)}
       postIds={relatedPosts.map((post) => post.id)}
     />
   ) : null

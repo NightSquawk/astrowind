@@ -1,0 +1,53 @@
+---
+import type { InferGetStaticPropsType, GetStaticPaths } from 'astro';
+
+import Layout from '~/layouts/PageLayout.astro';
+import BlogList from '~/components/blog/List.astro';
+import Headline from '~/components/blog/Headline.astro';
+import Pagination from '~/components/blog/Pagination.astro';
+
+import { blogListRobots, getStaticPathsBlogList } from '~/utils/blog';
+import { SUPPORTED_LOCALES } from '~/i18n/config';
+import { getUiStrings } from '~/i18n/ui';
+import { normalizeLocale } from '~/i18n/utils';
+
+export const prerender = true;
+
+export const getStaticPaths = (async ({ paginate }) => {
+  const paths = await Promise.all(SUPPORTED_LOCALES.map((locale) => getStaticPathsBlogList({ paginate, locale })));
+
+  return paths.flat().map((path) => {
+    const params = Object.fromEntries(Object.entries(path.params).filter(([key]) => key !== 'blog'));
+    return {
+      ...path,
+      params,
+    };
+  });
+}) satisfies GetStaticPaths;
+
+type Props = InferGetStaticPropsType<typeof getStaticPaths>;
+
+const { page } = Astro.props as Props;
+const locale = normalizeLocale(Astro.params.locale);
+const t = getUiStrings(locale).blog;
+const currentPage = page.currentPage ?? 1;
+
+const metadata = {
+  title: t.pageTitle(currentPage),
+  robots: {
+    index: blogListRobots?.index && currentPage === 1,
+    follow: blogListRobots?.follow,
+  },
+  openGraph: {
+    type: 'blog',
+  },
+};
+---
+
+<Layout metadata={metadata}>
+  <section class="px-6 sm:px-6 py-12 sm:py-16 lg:py-20 mx-auto max-w-4xl">
+    <Headline subtitle={t.subtitle}>{t.title}</Headline>
+    <BlogList posts={page.data} />
+    <Pagination prevUrl={page.url.prev} nextUrl={page.url.next} />
+  </section>
+</Layout>

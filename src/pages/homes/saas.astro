@@ -8,19 +8,23 @@ import Steps2 from '~/components/widgets/Steps2.astro';
 import Content from '~/components/widgets/Content.astro';
 import Pricing from '~/components/widgets/Pricing.astro';
 
-import { headerData } from '~/navigation';
+import { getHeaderData } from '~/navigation';
+import { getLocaleFromPathname } from '~/i18n/utils';
 import FAQs from '~/components/widgets/FAQs.astro';
 import BlogLatestPosts from '~/components/widgets/BlogLatestPosts.astro';
 
 const metadata = {
   title: 'SaaS Landing Page',
 };
+const locale = getLocaleFromPathname(Astro.url.pathname);
+const headerData = getHeaderData(locale);
 ---
 
 <Layout metadata={metadata}>
   <Fragment slot="header">
     <Header
       {...headerData}
+      locale={locale}
       actions={[
         {
           variant: 'secondary',
@@ -34,6 +38,7 @@ const metadata = {
         },
       ]}
       isSticky
+      showLanguageSwitcher
     />
   </Fragment>
 

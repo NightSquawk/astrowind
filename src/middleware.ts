@@ -2,6 +2,7 @@ import { defineMiddleware } from 'astro:middleware';
 import type { Redirect } from './data/redirects.js';
 import { getRedirect } from './data/redirects.js';
 import { getPromoRedirect } from './data/promoRedirects.js';
+import { DEFAULT_LOCALE } from './i18n/config';
 
 /**
  * Middleware to handle link shortener redirects
@@ -22,6 +23,10 @@ export const onRequest = defineMiddleware(async (context, next) => {
   // Skip the redirect interstitial page itself to avoid infinite loops
   // Handle both with and without trailing slash
   const normalizedPathname = pathname.endsWith('/') && pathname !== '/' ? pathname.slice(0, -1) : pathname;
+  if (normalizedPathname === '/') {
+    return context.redirect(`/${DEFAULT_LOCALE}/`, 302);
+  }
+
   if (normalizedPathname === '/redirect') {
     if (import.meta.env.DEV) {
       console.log('[Redirect Middleware] Skipping redirect page:', pathname);

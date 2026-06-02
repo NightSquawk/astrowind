@@ -7,6 +7,8 @@ import type { SEOProps } from 'astro-seo';
 import { SITE, METADATA, I18N } from 'astrowind:config';
 import type { MetaData, MetaDataOpenGraph } from '~/types';
 import { getCanonical } from '~/utils/permalinks';
+import { DEFAULT_LOCALE } from '~/i18n/config';
+import { getAlternateLocaleLinks, getLocaleConfig, getLocaleFromPathname } from '~/i18n/utils';
 
 import { adaptOpenGraphImages } from '~/utils/images';
 
@@ -24,12 +26,16 @@ const {
   twitter = {},
 } = Astro.props;
 
+const locale = getLocaleFromPathname(Astro.url.pathname);
+const localeConfig = getLocaleConfig(locale);
+const alternateLocaleLinks = getAlternateLocaleLinks(Astro.url.pathname);
+
 const mergedOg: MetaDataOpenGraph = merge(
   {
     url: canonical,
     siteName: SITE?.name,
     images: [],
-    locale: I18N?.language || 'en',
+    locale: localeConfig.openGraphLocale || I18N?.language || 'en_US',
     type: 'website',
   },
   METADATA?.openGraph,
@@ -111,3 +117,13 @@ const seoProps: SEOProps = {
 ---
 
 <SEO {...seoProps} />
+{
+  alternateLocaleLinks.map((item) => (
+    <link rel="alternate" hreflang={item.language} href={String(getCanonical(item.href))} />
+  ))
+}
+<link
+  rel="alternate"
+  hreflang="x-default"
+  href={String(getCanonical(alternateLocaleLinks.find((item) => item.locale === DEFAULT_LOCALE)?.href || '/en/'))}
+/>

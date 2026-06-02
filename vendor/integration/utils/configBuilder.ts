@@ -28,8 +28,18 @@ export interface MetaDataConfig extends Omit<MetaData, 'title'> {
   };
 }
 export interface I18NConfig {
+  defaultLocale: string;
   language: string;
   textDirection: string;
+  locales?: Record<
+    string,
+    {
+      label?: string;
+      language?: string;
+      textDirection?: string;
+      openGraphLocale?: string;
+    }
+  >;
   dateFormatter?: Intl.DateTimeFormat;
 }
 export interface AppBlogConfig {
@@ -152,8 +162,23 @@ const getMetadata = (config: Config) => {
 
 const getI18N = (config: Config) => {
   const _default = {
-    language: 'en',
+    defaultLocale: 'en',
+    language: 'en-US',
     textDirection: 'ltr',
+    locales: {
+      en: {
+        label: 'English',
+        language: 'en-US',
+        textDirection: 'ltr',
+        openGraphLocale: 'en_US',
+      },
+      es: {
+        label: 'Español',
+        language: 'es',
+        textDirection: 'ltr',
+        openGraphLocale: 'es_ES',
+      },
+    },
   };
 
   const value = merge({}, _default, config?.i18n ?? {});

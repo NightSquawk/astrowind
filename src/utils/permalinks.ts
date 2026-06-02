@@ -2,6 +2,8 @@ import slugify from 'limax';
 
 import { SITE, APP_BLOG } from 'astrowind:config';
 
+import type { Locale } from '~/i18n/config';
+import { isLocale } from '~/i18n/utils';
 import { trim } from '~/utils/utils';
 
 export const trimSlash = (s: string) => trim(trim(s, '/'));
@@ -39,8 +41,10 @@ export const getCanonical = (path = ''): string | URL => {
   return url;
 };
 
+type PermalinkType = 'home' | 'blog' | 'asset' | 'category' | 'tag' | 'post' | 'page';
+
 /** */
-export const getPermalink = (slug = '', type = 'page'): string => {
+export const getPermalink = (slug = '', type: PermalinkType | string = 'page', locale?: Locale | string): string => {
   let permalink: string;
 
   if (
@@ -55,11 +59,11 @@ export const getPermalink = (slug = '', type = 'page'): string => {
 
   switch (type) {
     case 'home':
-      permalink = getHomePermalink();
+      permalink = '/';
       break;
 
     case 'blog':
-      permalink = getBlogPermalink();
+      permalink = createPath(BLOG_BASE);
       break;
 
     case 'asset':
@@ -84,14 +88,14 @@ export const getPermalink = (slug = '', type = 'page'): string => {
       break;
   }
 
-  return definitivePermalink(permalink);
+  return definitivePermalink(permalink, locale);
 };
 
 /** */
-export const getHomePermalink = (): string => getPermalink('/');
+export const getHomePermalink = (locale?: Locale | string): string => getPermalink('/', 'page', locale);
 
 /** */
-export const getBlogPermalink = (): string => getPermalink(BLOG_BASE);
+export const getBlogPermalink = (locale?: Locale | string): string => getPermalink(BLOG_BASE, 'page', locale);
 
 /** */
 export const getAsset = (path: string): string =>
@@ -102,31 +106,32 @@ export const getAsset = (path: string): string =>
     .join('/');
 
 /** */
-const definitivePermalink = (permalink: string): string => createPath(BASE_PATHNAME, permalink);
+const definitivePermalink = (permalink: string, locale?: Locale | string): string =>
+  createPath(BASE_PATHNAME, isLocale(locale) ? locale : '', permalink);
 
 /** */
-export const applyGetPermalinks = (menu: object = {}) => {
+export const applyGetPermalinks = (menu: object = {}, locale?: Locale | string) => {
   if (Array.isArray(menu)) {
-    return menu.map((item) => applyGetPermalinks(item));
+    return menu.map((item) => applyGetPermalinks(item, locale));
   } else if (typeof menu === 'object' && menu !== null) {
     const obj = {};
     for (const key in menu) {
       if (key === 'href') {
         if (typeof menu[key] === 'string') {
-          obj[key] = getPermalink(menu[key]);
+          obj[key] = getPermalink(menu[key], 'page', locale);
         } else if (typeof menu[key] === 'object') {
           if (menu[key].type === 'home') {
-            obj[key] = getHomePermalink();
+            obj[key] = getHomePermalink(locale);
           } else if (menu[key].type === 'blog') {
-            obj[key] = getBlogPermalink();
+            obj[key] = getBlogPermalink(locale);
           } else if (menu[key].type === 'asset') {
             obj[key] = getAsset(menu[key].url);
           } else if (menu[key].url) {
-            obj[key] = getPermalink(menu[key].url, menu[key].type);
+            obj[key] = getPermalink(menu[key].url, menu[key].type, locale);
           }
         }
       } else {
-        obj[key] = applyGetPermalinks(menu[key]);
+        obj[key] = applyGetPermalinks(menu[key], locale);
       }
     }
     return obj;

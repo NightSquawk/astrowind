@@ -1,0 +1,78 @@
+---
+import type { AstroComponentFactory } from 'astro/runtime/server/index.js';
+
+import AboutPage from '../about.astro';
+import ContactPage from '../contact.astro';
+import DevToolsDemoPage from '../dev-tools-demo.astro';
+import MobileAppHomePage from '../homes/mobile-app.astro';
+import PersonalHomePage from '../homes/personal.astro';
+import SaasHomePage from '../homes/saas.astro';
+import StartupHomePage from '../homes/startup.astro';
+import ClickThroughLandingPage from '../landing/click-through.astro';
+import LeadGenerationLandingPage from '../landing/lead-generation.astro';
+import PreLaunchLandingPage from '../landing/pre-launch.astro';
+import ProductLandingPage from '../landing/product.astro';
+import SalesLandingPage from '../landing/sales.astro';
+import SubscriptionLandingPage from '../landing/subscription.astro';
+import MuxDemoPage from '../mux-demo.astro';
+import PricingPage from '../pricing.astro';
+import PrivacyPage from '../privacy.md';
+import SchemaDemoPage from '../schema-demo.astro';
+import ServicesPage from '../services.astro';
+import ShadcnDemoPage from '../shadcn-demo.astro';
+import TermsPage from '../terms.md';
+
+const pages = {
+  about: AboutPage,
+  contact: ContactPage,
+  'dev-tools-demo': DevToolsDemoPage,
+  'homes/mobile-app': MobileAppHomePage,
+  'homes/personal': PersonalHomePage,
+  'homes/saas': SaasHomePage,
+  'homes/startup': StartupHomePage,
+  'landing/click-through': ClickThroughLandingPage,
+  'landing/lead-generation': LeadGenerationLandingPage,
+  'landing/pre-launch': PreLaunchLandingPage,
+  'landing/product': ProductLandingPage,
+  'landing/sales': SalesLandingPage,
+  'landing/subscription': SubscriptionLandingPage,
+  'mux-demo': MuxDemoPage,
+  pricing: PricingPage,
+  privacy: PrivacyPage,
+  'schema-demo': SchemaDemoPage,
+  services: ServicesPage,
+  'shadcn-demo': ShadcnDemoPage,
+  terms: TermsPage,
+} satisfies Record<string, AstroComponentFactory>;
+
+export function getStaticPaths() {
+  return [
+    'about',
+    'contact',
+    'dev-tools-demo',
+    'homes/mobile-app',
+    'homes/personal',
+    'homes/saas',
+    'homes/startup',
+    'landing/click-through',
+    'landing/lead-generation',
+    'landing/pre-launch',
+    'landing/product',
+    'landing/sales',
+    'landing/subscription',
+    'mux-demo',
+    'pricing',
+    'privacy',
+    'schema-demo',
+    'services',
+    'shadcn-demo',
+    'terms',
+  ].map((path) => ({
+    params: { path },
+  }));
+}
+
+const Component = pages[Astro.params.path as keyof typeof pages];
+---
+
+<Component />

@@ -17,6 +17,7 @@ import type { AstroIntegration } from 'astro';
 import astrowind from './vendor/integration';
 import clientOverridesPlugin from './vendor/integration/vite-plugin-client-overrides';
 
+import { DEFAULT_LOCALE, SITEMAP_I18N_LOCALES, SUPPORTED_LOCALES } from './src/i18n/config';
 import { lazyImagesRehypePlugin, readingTimeRemarkPlugin, responsiveTablesRehypePlugin } from './src/utils/frontmatter';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -29,6 +30,11 @@ export default defineConfig({
   output: 'static',
   adapter: cloudflare(),
   trailingSlash: 'ignore',
+  i18n: {
+    locales: [...SUPPORTED_LOCALES],
+    defaultLocale: DEFAULT_LOCALE,
+    routing: 'manual',
+  },
 
   integrations: [
     sitemap({
@@ -36,6 +42,10 @@ export default defineConfig({
       priority: 0.7,
       lastmod: new Date(),
       entryLimit: 50000,
+      i18n: {
+        defaultLocale: DEFAULT_LOCALE,
+        locales: SITEMAP_I18N_LOCALES,
+      },
     }),
     mdx(),
     icon({

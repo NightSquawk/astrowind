@@ -10,6 +10,10 @@ export interface Post {
 
   /**  */
   permalink: string;
+  /** Locale used for this post route. */
+  locale?: string;
+  /** Original content locale when a route is using fallback content. */
+  sourceLocale?: string;
 
   /**  */
   publishDate: Date;
