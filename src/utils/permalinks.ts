@@ -38,19 +38,24 @@ export const getCanonical = (path = ''): string | URL => {
   return url;
 };
 
+// Schemes that can encode executable code in an href. `slug` can originate from content
+// collection frontmatter (post/category/tag), so it must never be trusted as-is: normalize
+// before comparing (strip leading whitespace, lowercase) so obfuscated variants (e.g.
+// ` JavaScript:`) are caught too -- see CodeQL js/incomplete-url-scheme-check.
+const DANGEROUS_SCHEME_RE = /^(javascript|data|vbscript):/i;
+
 /** */
 export const getPermalink = (slug = '', type = 'page'): string => {
   let permalink: string;
 
-  if (
-    slug.startsWith('https://') ||
-    slug.startsWith('http://') ||
-    slug.startsWith('://') ||
-    slug.startsWith('#') ||
-    slug.startsWith('javascript:') ||
-    slug.startsWith('data:') ||
-    slug.startsWith('vbscript:')
-  ) {
+  // Dangerous schemes are checked first and neutralized (not returned verbatim): unlike the
+  // block below, this is not a "pass this through unmodified" allowlist, so recognizing one of
+  // these schemes must never result in it flowing into an href unchanged.
+  if (DANGEROUS_SCHEME_RE.test(slug.trimStart())) {
+    return '#';
+  }
+
+  if (slug.startsWith('https://') || slug.startsWith('http://') || slug.startsWith('://') || slug.startsWith('#')) {
     return slug;
   }
 
