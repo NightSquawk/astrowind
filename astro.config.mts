@@ -96,7 +96,11 @@ export default defineConfig({
   ],
 
   image: {
-    domains: ['cdn.pixabay.com'],
+    // images.unsplash.com / plus.unsplash.com are used throughout src/pages (about, homes/*,
+    // index, landing/*, pricing, services) and in blog post frontmatter. A stricter remote-image
+    // validation in newer Astro releases turned this pre-existing gap into a hard build failure
+    // (RemoteImageNotAllowed on /homes/personal) during the 2026-09-18 dependency maintenance pass.
+    domains: ['cdn.pixabay.com', 'images.unsplash.com', 'plus.unsplash.com'],
   },
 
   markdown: {

@@ -1,6 +1,6 @@
 ---
 import type { GetStaticPaths } from 'astro';
-import { getCollection } from 'astro:content';
+import { getCollection, render } from 'astro:content';
 import PageLayout from '~/layouts/PageLayout.astro';
 import MuxVideoPlayer from '~/plugins/mux/components/MuxVideoPlayer.astro';
 import { findPostsByIds } from '~/utils/blog';
@@ -14,7 +14,7 @@ export async function getStaticPaths() {
     : posts;
 
   return publishedPosts.map((post) => ({
-    params: { slug: post.slug },
+    params: { slug: post.id },
     props: { post },
   }));
 }
@@ -24,7 +24,7 @@ interface Props {
 }
 
 const { post } = Astro.props;
-const { Content } = await post.render();
+const { Content } = await render(post);
 
 // Get related posts (if needed)
 // const relatedPosts = post.data.tags
