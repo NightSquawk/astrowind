@@ -27,7 +27,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
 		if (import.meta.env.DEV) {
 			console.log('[Redirect Middleware] Skipping redirect page:', pathname);
 		}
-		return next();
+		return withSecurityHeaders(await next());
 	}
 	
 	// Debug logging (remove in production if desired)
@@ -120,5 +120,28 @@ export const onRequest = defineMiddleware(async (context, next) => {
 	}
 	
 	// No redirect found, continue with normal request handling
-	return next();
+	return withSecurityHeaders(await next());
 });
+
+/**
+ * Baseline security headers for on-demand (Worker-rendered) responses.
+ * Prerendered pages and static assets get the same set from public/_headers.
+ * Keep the two lists in sync.
+ */
+const SECURITY_HEADERS: Record<string, string> = {
+	'X-Content-Type-Options': 'nosniff',
+	'X-Frame-Options': 'SAMEORIGIN',
+	'Referrer-Policy': 'strict-origin-when-cross-origin',
+};
+
+function withSecurityHeaders(response: Response): Response {
+	try {
+		for (const [name, value] of Object.entries(SECURITY_HEADERS)) response.headers.set(name, value);
+		return response;
+	} catch {
+		// Some responses have immutable headers; copy into a mutable response instead
+		const copy = new Response(response.body, response);
+		for (const [name, value] of Object.entries(SECURITY_HEADERS)) copy.headers.set(name, value);
+		return copy;
+	}
+}
