@@ -10,7 +10,7 @@
  */
 
 import { getCollection } from 'astro:content';
-import type { Redirect } from './redirects';
+import { getRedirect, type Redirect } from './redirects';
 import { getTodayPacific, getPacificDateComponents, createPacificEndOfDay } from '../utils/date-helpers';
 
 /**
@@ -166,4 +166,23 @@ export async function getPromoRedirect(path: string): Promise<Redirect | null> {
 	if (redirectWithSlash) return redirectWithSlash;
 	
 	return null;
+}
+
+/**
+ * Resolve a short path to its configured redirect: promo redirects (campaigns/coupons)
+ * first, then static redirects. Used by both the middleware and the /redirect
+ * interstitial so the two always agree on where a short link goes.
+ */
+export async function resolveRedirect(path: string): Promise<Redirect | null> {
+	try {
+		const promo = await getPromoRedirect(path);
+		if (promo) return promo;
+	} catch (error) {
+		// If promo redirects fail (e.g., content collections not available), fall through
+		if (import.meta.env.DEV) {
+			console.warn('[Redirect] Could not check promo redirects:', error);
+		}
+	}
+
+	return getRedirect(path);
 }

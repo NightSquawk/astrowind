@@ -93,7 +93,7 @@ Defined in `src/content/config.ts` using Astro's content layer with loaders:
 **Redirect Flow:**
 1. User hits short URL (e.g., `/go`)
 2. Middleware finds redirect config
-3. Redirects to `/redirect?source=/go&dest=/contact&type=temporary&...` (307)
+3. Redirects to `/redirect?source=/go&...` (307). The interstitial resolves the destination for `source` itself (`resolveRedirect()` in `src/data/promoRedirects.ts`) and never reads a destination from the query string, so it can't be used as an open redirect; unknown sources go to `/`.
 4. Interstitial page (`src/pages/redirect.astro`) tracks event via GA4/Datadog
 5. Client-side JS (`src/scripts/redirect-analytics.ts`) fires analytics then redirects
 

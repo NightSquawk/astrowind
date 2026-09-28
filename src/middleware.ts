@@ -1,6 +1,5 @@
 import { defineMiddleware } from 'astro:middleware';
-import { getRedirect } from './data/redirects.js';
-import { getPromoRedirect } from './data/promoRedirects.js';
+import { resolveRedirect } from './data/promoRedirects.js';
 
 /**
  * Middleware to handle link shortener redirects
@@ -35,57 +34,19 @@ export const onRequest = defineMiddleware(async (context, next) => {
 		console.log('[Redirect Middleware] Checking path:', pathname);
 	}
 	
-	// Check promo redirects first (from campaigns/coupons)
-	let redirect = null;
-	try {
-		redirect = await getPromoRedirect(pathname);
-		if (redirect && import.meta.env.DEV) {
-			console.log('[Redirect Middleware] Found promo redirect:', pathname, '->', redirect.destination);
-		}
-	} catch (error) {
-		// If promo redirects fail (e.g., content collections not available), fall through
-		if (import.meta.env.DEV) {
-			console.warn('[Redirect Middleware] Could not check promo redirects:', error);
-		}
-	}
-	
-	// Fall back to static redirects if no promo redirect found
-	if (!redirect) {
-		redirect = getRedirect(pathname);
-	}
+	// Check promo redirects (from campaigns/coupons), then static redirects
+	const redirect = await resolveRedirect(pathname);
 	
 	if (redirect) {
 		if (import.meta.env.DEV) {
 			console.log('[Redirect Middleware] Found redirect:', pathname, '->', redirect.destination);
 		}
 		
-		// Build destination URL
-		let destination = redirect.destination;
-		
-		// If destination is relative, preserve query params from original request
-		if (!destination.startsWith('http://') && !destination.startsWith('https://')) {
-			const searchParams = context.url.searchParams.toString();
-			if (searchParams) {
-				// Check if destination already has query params
-				const separator = destination.includes('?') ? '&' : '?';
-				destination = destination + separator + searchParams;
-			}
-		}
-		
-		// Get referrer from request headers
-		const referrer = context.request.headers.get('referer') || '';
-		
-		// Build redirect interstitial URL with analytics parameters
+		// Build redirect interstitial URL. Only the source path is passed; the
+		// interstitial resolves destination/type/category from the redirect config itself.
 		// Use trailing slash to match Astro's default behavior
 		const redirectUrl = new URL('/redirect/', context.url.origin);
 		redirectUrl.searchParams.set('source', pathname);
-		redirectUrl.searchParams.set('dest', destination);
-		redirectUrl.searchParams.set('type', redirect.permanent ? 'permanent' : 'temporary');
-		
-		// Add redirect category if available
-		if (redirect.category) {
-			redirectUrl.searchParams.set('category', redirect.category);
-		}
 		
 		// Add hardcoded UTM parameters from redirect config (if any)
 		// These will be merged with any user-provided UTM params

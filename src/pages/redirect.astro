@@ -5,12 +5,17 @@
 // Must be server-rendered to access request headers
 export const prerender = false;
 
-// Get redirect parameters from URL
+import { resolveRedirect } from '~/data/promoRedirects';
+
+// Only `source` is read from the query string. The destination, type, and category
+// come from the redirect config (promo + static) so this page can't be used as an
+// open redirect (or to run a `javascript:` URL) via a crafted destination.
 const url = Astro.url;
 const sourcePath = url.searchParams.get('source') || '';
-const destinationUrl = url.searchParams.get('dest') || '';
-const redirectType = (url.searchParams.get('type') === 'permanent' ? 'permanent' : 'temporary') as 'temporary' | 'permanent';
-const redirectCategory = url.searchParams.get('category') || undefined;
+const redirect = await resolveRedirect(sourcePath);
+const destinationUrl = redirect?.destination || '';
+const redirectType = (redirect?.permanent ? 'permanent' : 'temporary') as 'temporary' | 'permanent';
+const redirectCategory = redirect?.category;
 
 // Get referrer - handle both server-side (headers) and client-side (document.referrer)
 let referrer = '';
@@ -21,8 +26,8 @@ try {
 	referrer = '';
 }
 
-// Validate required parameters
-const isValid = sourcePath && destinationUrl;
+// Validate required parameters (configured destinations must still be http(s))
+const isValid = Boolean(redirect) && /^(https?:\/\/|\/(?!\/))/i.test(destinationUrl);
 
 // Debug logging in development
 if (import.meta.env.DEV) {
@@ -37,15 +42,8 @@ if (import.meta.env.DEV) {
 	});
 }
 
-// Build full destination URL if relative
-let fullDestination = destinationUrl;
-if (!destinationUrl.startsWith('http://') && !destinationUrl.startsWith('https://')) {
-	const baseUrl = new URL(Astro.url.origin);
-	fullDestination = new URL(destinationUrl, baseUrl).toString();
-}
-
-// Parse destination URL to merge query params
-const destUrl = new URL(fullDestination);
+// Build full destination URL (relative destinations resolve against this site)
+const destUrl = new URL(isValid ? destinationUrl : '/', Astro.url.origin);
 const destParams = new URLSearchParams(destUrl.search);
 
 // Preserve any additional query params from redirect URL (UTM params, etc.)
@@ -59,7 +57,7 @@ url.searchParams.forEach((value, key) => {
 
 // Rebuild destination URL with merged query params
 destUrl.search = destParams.toString();
-fullDestination = destUrl.toString();
+const fullDestination = destUrl.toString();
 
 // Debug logging for final destination in development
 if (import.meta.env.DEV) {
