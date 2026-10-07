@@ -1,4 +1,5 @@
 import path from 'path';
+import { buildVersion } from './scripts/build-version.mjs';
 import { fileURLToPath } from 'url';
 
 import { defineConfig } from 'astro/config';
@@ -113,6 +114,7 @@ export default defineConfig({
   },
 
   vite: {
+    define: { 'import.meta.env.PUBLIC_DATADOG_VERSION': JSON.stringify(buildVersion()) },
     plugins: [tailwindcss(), clientOverridesPlugin()],
     resolve: {
       alias: {

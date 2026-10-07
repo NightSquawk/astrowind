@@ -1,99 +1,70 @@
-/**
- * Datadog RUM Initialization Script
- * This file is bundled by Astro and can import npm packages
- */
+import type { datadogRum } from '@datadog/browser-rum';
+import { observeAnalyticsConsent } from '../utils/analytics-consent';
+import { canTrackLocation, type DatadogConfig } from '../utils/datadog-config';
+import { sanitizeRumEvent } from '../utils/datadog-privacy';
+import { initDatadogRUMEvents } from './datadog-rum';
 
-import { datadogRum } from '@datadog/browser-rum';
+let started = false;
 
-/**
- * Initialize Datadog RUM with configuration from window.__DATADOG_CONFIG__
- */
-/**
- * Initialize Datadog RUM with configuration from window.__DATADOG_CONFIG__
- */
 export function initDatadogRUM() {
-  const config = (window as any).__DATADOG_CONFIG__;
-
-  if (!config || !config.applicationId || !config.clientToken) {
-    console.warn('[Datadog RUM] Missing configuration, skipping initialization');
+  if (started || typeof window === 'undefined') return;
+  const element = document.getElementById('datadog-config');
+  if (!element?.textContent) return;
+  let config: DatadogConfig;
+  try {
+    config = JSON.parse(element.textContent);
+  } catch {
     return;
   }
+  if (!canTrackLocation(config, window.location)) return;
+  started = true;
 
-  // TODO: Update allowedTracingUrls with your domain(s)
-  const allowedTracingUrls = [
-    // Add your production domains here
-    // /^https:\/\/www\.yourdomain\.com/,
-    // /^https:\/\/yourdomain\.com/,
-    // Localhost for development
-    /^http:\/\/localhost/,
-    /^http:\/\/127\.0\.0\.1/,
-    /^http:\/\/localhost:\d+/,
-    /^http:\/\/127\.0\.0\.1:\d+/,
-  ];
+  let granted = false;
+  let rum: typeof datadogRum | undefined;
+  let loading: Promise<void> | undefined;
+  let stopEvents: (() => void) | undefined;
+  const applyConsent = () => {
+    if (!rum) return;
+    rum.setTrackingConsent(granted ? 'granted' : 'not-granted');
+    stopEvents?.();
+    stopEvents = granted ? initDatadogRUMEvents(rum) : undefined;
+  };
 
-  // Initialize Datadog RUM with Session Replay enabled
-  datadogRum.init({
-    applicationId: config.applicationId,
-    clientToken: config.clientToken,
-    site: config.site,
-    service: config.service,
-    env: config.env,
-    // Specify a version number to identify the deployed version of your application in Datadog
-    ...(config.version && { version: config.version }),
-
-    // Session sampling: 100% of sessions will be tracked for RUM
-    sessionSampleRate: 100,
-
-    // Session Replay: 100% of sessions will have replay enabled
-    // This records user interactions, page views, and allows visual replay of sessions
-    // Adjust this value (0-100) based on your needs and Datadog plan limits
-    sessionReplaySampleRate: 100,
-
-    // Performance tracking
-    trackBfcacheViews: true, // Track back/forward cache navigations
-    trackResources: true, // Track resource loading performance
-    trackLongTasks: true, // Track long-running tasks
-    trackUserInteractions: true, // Track user interactions (clicks, etc.)
-
-    // Privacy settings for Session Replay
-    // 'allow': Records all content (default, most detailed)
-    // 'mask': Masks sensitive elements (text inputs, etc.)
-    // 'mask-user-input': Masks user input fields only
-    defaultPrivacyLevel: 'allow',
-
-    // Enable tracing for first-party resources
-    allowedTracingUrls,
-  });
-
-  // Set user context if available (optional)
-  // datadogRum.setUser({
-  // 	id: 'user-id',
-  // 	name: 'User Name',
-  // 	email: 'user@example.com',
-  // });
-
-  // Track custom actions
-  datadogRum.addAction('page_view', {
-    page: window.location.pathname,
+  observeAnalyticsConsent((consent) => {
+    granted = consent;
+    if (rum) return applyConsent();
+    // Do not even load the SDK until analytics consent has been granted.
+    if (!granted || loading) return;
+    loading = import('@datadog/browser-rum')
+      .then(({ datadogRum: sdk }) => {
+        sdk.init({
+          applicationId: config.applicationId,
+          clientToken: config.clientToken,
+          site: config.site,
+          service: config.service,
+          env: config.env,
+          version: config.version,
+          trackingConsent: 'not-granted',
+          sessionSampleRate: 100,
+          sessionReplaySampleRate: 0,
+          defaultPrivacyLevel: 'mask',
+          trackAnonymousUser: false,
+          trackUserInteractions: true,
+          trackResources: true,
+          trackLongTasks: true,
+          beforeSend: sanitizeRumEvent,
+        });
+        rum = sdk;
+        // Consent may have been withdrawn while the import was in flight.
+        applyConsent();
+      })
+      .catch(() => {
+        console.warn('[Datadog RUM] SDK could not load; analytics remains disabled.');
+      });
   });
 }
 
-// Auto-initialize when DOM is ready and config is available
-function tryInit() {
-  const config = (window as any).__DATADOG_CONFIG__;
-  if (!config || !config.applicationId || !config.clientToken) {
-    // Config not ready yet, try again after a short delay
-    setTimeout(tryInit, 50);
-    return;
-  }
-  initDatadogRUM();
-}
-
-if (typeof document !== 'undefined' && typeof window !== 'undefined') {
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', tryInit);
-  } else {
-    // DOM already loaded, try to init (will retry if config not ready)
-    tryInit();
-  }
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initDatadogRUM);
+  else initDatadogRUM();
 }

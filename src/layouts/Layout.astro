@@ -12,6 +12,8 @@ import Metadata from '~/components/common/Metadata.astro';
 import SiteVerification from '~/components/common/SiteVerification.astro';
 import Analytics from '~/components/common/Analytics.astro';
 import GoogleTagManager from '~/components/tracking/GoogleTagManager.astro';
+import TermlyCMP from '~/components/tracking/TermlyCMP.astro';
+import DatadogRUM from '~/components/tracking/DatadogRUM.astro';
 import MicrosoftClarity from '~/components/tracking/MicrosoftClarity.astro';
 import BasicScripts from '~/components/common/BasicScripts.astro';
 
@@ -34,6 +36,8 @@ const textDirection = localeConfig.textDirection || I18N.textDirection;
 <!doctype html>
 <html lang={language} dir={textDirection} class="2xl:text-[20px]">
   <head>
+    <meta charset="UTF-8" />
+    <TermlyCMP />
     <CommonMeta />
     <Favicons />
     <CustomStyles />
@@ -43,6 +47,7 @@ const textDirection = localeConfig.textDirection || I18N.textDirection;
     <Analytics />
     <GoogleTagManager />
     <MicrosoftClarity />
+    <DatadogRUM />
 
     <link rel="preconnect" href="https://images.unsplash.com" />
 
@@ -56,9 +61,5 @@ const textDirection = localeConfig.textDirection || I18N.textDirection;
     <slot />
 
     <BasicScripts />
-
-    <script>
-      import '~/scripts/analytics-events';
-    </script>
   </body>
 </html>
