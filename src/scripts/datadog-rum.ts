@@ -1,179 +1,102 @@
-/**
- * Datadog Real User Monitoring (RUM) Event Tracking
- * Extends Datadog RUM with custom event tracking for user interactions
- * Works alongside Google Analytics for comprehensive monitoring
- */
+import type { datadogRum } from '@datadog/browser-rum';
+import { analyticsPath } from '../utils/datadog-privacy';
 
-import { datadogRum } from '@datadog/browser-rum';
-
-/**
- * Initialize Datadog RUM custom event tracking
- * Should be called after Datadog RUM is initialized
- * Works in both development and production (env is set to 'development' in dev)
- */
-export function initDatadogRUMEvents() {
-  // Safety check
-  if (typeof window === 'undefined') {
-    return;
-  }
-
-  // Check if Datadog RUM is initialized
-  try {
-    // This will throw if RUM is not initialized
-    datadogRum.getInternalContext();
-  } catch {
-    console.warn('[Datadog RUM] RUM not initialized, skipping custom event tracking');
-    return;
-  }
-
-  // Track CTA button clicks
-  document.addEventListener('click', (e) => {
-    const target = e.target as HTMLElement;
-    const button = target.closest('a.btn, button.btn, .btn, [class*="cta"], [class*="button"]');
-
-    if (button) {
-      const buttonText = button.textContent?.trim() || '';
-      const href = (button as HTMLAnchorElement).href || '';
-
-      datadogRum.addAction('cta_click', {
-        button_text: buttonText,
-        destination_url: href || window.location.href,
-        category: 'engagement',
-      });
-    }
-  });
-
-  // Track phone number clicks
-  document.addEventListener('click', (e) => {
-    const target = e.target as HTMLElement;
-    const link = target.closest('a[href^="tel:"]');
-
-    if (link) {
-      const phoneNumber = (link as HTMLAnchorElement).href.replace('tel:', '');
-      const linkText = link.textContent?.trim() || phoneNumber;
-
-      datadogRum.addAction('phone_click', {
-        phone_number: phoneNumber,
-        link_text: linkText,
-        category: 'contact',
-      });
-    }
-  });
-
-  // Track email clicks
-  document.addEventListener('click', (e) => {
-    const target = e.target as HTMLElement;
-    const link = target.closest('a[href^="mailto:"]');
-
-    if (link) {
-      const emailAddress = (link as HTMLAnchorElement).href.replace('mailto:', '');
-      const linkText = link.textContent?.trim() || emailAddress;
-
-      datadogRum.addAction('email_click', {
-        email_address: emailAddress,
-        link_text: linkText,
-        category: 'contact',
-      });
-    }
-  });
-
-  // Track form submissions
-  document.addEventListener('submit', (e) => {
-    const form = e.target as HTMLFormElement;
-    if (!form) return;
-
-    const formId = form.id || form.name || 'unknown';
-    const formName = form.getAttribute('name') || formId;
-    const formAction = form.action || window.location.href;
-
-    datadogRum.addAction('form_submit', {
-      form_id: formId,
-      form_name: formName,
-      form_action: formAction,
-      category: 'engagement',
-    });
-  });
-
-  // Track scroll depth
-  const scrollDepthTracked = {
-    '25': false,
-    '50': false,
-    '75': false,
-    '100': false,
+/** Custom actions use explicit, non-personal labels. Native RUM owns page views. */
+export function initDatadogRUMEvents(rum: Pick<typeof datadogRum, 'addAction'>): () => void {
+  const abort = new AbortController();
+  const options = { signal: abort.signal };
+  let observer: IntersectionObserver | undefined;
+  let scrollTimer: ReturnType<typeof setTimeout> | undefined;
+  const tracked = new Set<number>();
+  const label = (element: Element, attribute: string) => {
+    const value = element.getAttribute(attribute) || '';
+    return /^[a-z][a-z0-9_-]{0,63}$/.test(value) ? value : undefined;
   };
+  const page = () => analyticsPath(window.location.pathname);
 
-  const trackScrollDepth = () => {
-    const windowHeight = window.innerHeight;
-    const documentHeight = document.documentElement.scrollHeight;
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    const scrollPercent = Math.round(((scrollTop + windowHeight) / documentHeight) * 100);
-
-    (['25', '50', '75', '100'] as const).forEach((threshold) => {
-      if (!scrollDepthTracked[threshold] && scrollPercent >= parseInt(threshold)) {
-        scrollDepthTracked[threshold] = true;
-
-        datadogRum.addAction('scroll_depth', {
-          percent_scrolled: threshold,
-          page_path: window.location.pathname,
-          category: 'engagement',
+  document.addEventListener(
+    'click',
+    (event) => {
+      if (!(event.target instanceof Element)) return;
+      const contact = event.target.closest('a[href^="mailto:"], a[href^="tel:"]');
+      if (contact) {
+        rum.addAction(contact.getAttribute('href')?.startsWith('tel:') ? 'phone_click' : 'email_click', {
+          page_path: page(),
         });
+        return;
       }
-    });
-  };
+      const target = event.target.closest('a[data-analytics-action], button[data-analytics-action]');
+      const action = target && label(target, 'data-analytics-action');
+      if (action) rum.addAction('cta_click', { action, page_path: page() });
+    },
+    options
+  );
 
-  // Throttle scroll tracking
-  let scrollTimeout: ReturnType<typeof setTimeout> | null = null;
-  window.addEventListener('scroll', () => {
-    if (scrollTimeout) return;
-    scrollTimeout = setTimeout(() => {
-      trackScrollDepth();
-      scrollTimeout = null;
-    }, 100);
-  });
+  document.addEventListener(
+    'submit',
+    (event) => {
+      if (!(event.target instanceof HTMLFormElement)) return;
+      const form = label(event.target, 'data-analytics-form');
+      if (form) rum.addAction('form_submit', { form, page_path: page() });
+    },
+    options
+  );
 
-  // Track element visibility for key sections
-  const trackElementVisibility = () => {
-    const sections = document.querySelectorAll('section[id], [class*="section"], [class*="hero"], [class*="feature"]');
-
-    const observer = new IntersectionObserver(
+  const reset = () => {
+    observer?.disconnect();
+    clearTimeout(scrollTimer);
+    scrollTimer = undefined;
+    tracked.clear();
+    if (typeof IntersectionObserver !== 'function') return;
+    const visible = new WeakSet<Element>();
+    observer = new IntersectionObserver(
       (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
-            const sectionName =
-              entry.target.id || entry.target.className || entry.target.getAttribute('data-section') || 'unknown';
-
-            // Only track once per page load
-            if (!entry.target.hasAttribute('data-datadog-tracked')) {
-              entry.target.setAttribute('data-datadog-tracked', 'true');
-
-              datadogRum.addAction('element_visibility', {
-                section_name: sectionName,
-                page_path: window.location.pathname,
-                category: 'engagement',
-              });
-            }
+        for (const entry of entries) {
+          const section = label(entry.target, 'data-analytics-section');
+          if (section && entry.isIntersecting && entry.intersectionRatio >= 0.5 && !visible.has(entry.target)) {
+            visible.add(entry.target);
+            rum.addAction('element_visibility', { section, page_path: page() });
           }
-        });
+        }
       },
-      {
-        threshold: 0.5,
-      }
+      { threshold: 0.5 }
     );
-
-    sections.forEach((section) => {
-      observer.observe(section);
-    });
+    document.querySelectorAll('[data-analytics-section]').forEach((element) => observer?.observe(element));
   };
+  window.addEventListener(
+    'scroll',
+    () => {
+      if (scrollTimer) return;
+      scrollTimer = setTimeout(() => {
+        scrollTimer = undefined;
+        const height = document.documentElement.scrollHeight;
+        if (!height) return;
+        const percent = Math.min(100, Math.round((100 * (window.scrollY + window.innerHeight)) / height));
+        for (const threshold of [25, 50, 75, 100]) {
+          if (percent >= threshold && !tracked.has(threshold)) {
+            tracked.add(threshold);
+            rum.addAction('scroll_depth', { percent_scrolled: threshold, page_path: page() });
+          }
+        }
+      }, 100);
+    },
+    { ...options, passive: true }
+  );
+  document.addEventListener(
+    'astro:before-swap',
+    () => {
+      observer?.disconnect();
+      clearTimeout(scrollTimer);
+      scrollTimer = undefined;
+    },
+    options
+  );
+  document.addEventListener('astro:page-load', reset, options);
+  reset();
 
-  // Initialize visibility tracking after a short delay to ensure DOM is ready
-  setTimeout(trackElementVisibility, 500);
-}
-
-// Auto-initialize when DOM is ready
-if (typeof document !== 'undefined' && typeof window !== 'undefined') {
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initDatadogRUMEvents);
-  } else {
-    initDatadogRUMEvents();
-  }
+  return () => {
+    abort.abort();
+    observer?.disconnect();
+    clearTimeout(scrollTimer);
+  };
 }

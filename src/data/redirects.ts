@@ -12,7 +12,7 @@
  * - "/campaign": "/contact-us/" with utm_source=instagram → Campaign redirect with UTM tracking
  *
  * Analytics Tracking:
- * - All redirects are automatically tracked with Google Analytics 4
+ * - Redirects are immediate; minimal operational counts are written to Worker logs
  * - Events include: source_path, destination_url, referrer, UTM parameters, and more
  * - Use the optional `category` field to group related redirects (e.g., 'marketing', 'social', 'internal')
  * - Use `utmParams` to hardcode UTM parameters for campaign tracking (e.g., Instagram campaigns)

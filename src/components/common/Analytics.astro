@@ -1,21 +1,14 @@
 ---
-import { ANALYTICS } from 'astrowind:config';
-
-const id = ANALYTICS?.vendors?.googleAnalytics?.id ? String(ANALYTICS.vendors.googleAnalytics.id) : '';
-const partytown = !!ANALYTICS?.vendors?.googleAnalytics?.partytown;
-const scriptType = partytown ? 'text/partytown' : undefined;
+import { ANALYTICS, SITE } from 'astrowind:config';
+const id = import.meta.env.PUBLIC_GOOGLE_ANALYTICS_ID || ANALYTICS?.vendors?.googleAnalytics?.id;
+const config = JSON.stringify({ id, hostname: new URL(SITE.site).hostname }).replace(/</g, '\\u003c');
 ---
 
-{id && <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${id}`} type={scriptType} />}
-
-<script is:inline id="ga-init" data-id={id} type={id ? scriptType : undefined}>
-  if (document.getElementById('ga-init').dataset.id) {
-    var d = document.getElementById('ga-init').dataset.id;
-    window.dataLayer = window.dataLayer || [];
-    window.gtag = function () {
-      dataLayer.push(arguments);
-    };
-    window.gtag?.('js', new Date());
-    window.gtag?.('config', d);
-  }
+{
+  import.meta.env.PROD && id && (
+    <script id="google-analytics-config" type="application/json" is:inline set:html={config} />
+  )
+}
+<script>
+  import '../../scripts/google-analytics';
 </script>

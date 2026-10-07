@@ -15,17 +15,9 @@ declare namespace App {
 // Global Datadog RUM configuration
 declare global {
   interface Window {
-    dataLayer?: Record<string, any>[];
+    dataLayer?: unknown[];
     gtag?: (...args: unknown[]) => void;
     highlightElement?: (index: number) => void;
-    __DATADOG_CONFIG__?: {
-      applicationId?: string;
-      clientToken?: string;
-      site?: string;
-      env?: string;
-      service?: string;
-      version?: string;
-    };
   }
 }
 
@@ -46,6 +38,7 @@ interface ImportMetaEnv {
   readonly PUBLIC_DATADOG_ENV?: string;
   readonly PUBLIC_DATADOG_SERVICE?: string;
   readonly PUBLIC_DATADOG_VERSION?: string;
+  readonly PUBLIC_DATADOG_ALLOWED_HOSTS?: string;
 
   // Termly CMP
   readonly PUBLIC_TERMLY_CMP_WEBSITE_UUID?: string;

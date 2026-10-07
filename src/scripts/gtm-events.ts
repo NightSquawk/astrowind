@@ -11,9 +11,11 @@
  * trackGTMEvent('button_click', 'engagement', 'Subscribe Button');
  */
 
+import { hasAnalyticsConsent } from '../utils/analytics-consent';
+
 declare global {
   interface Window {
-    dataLayer?: Record<string, any>[];
+    dataLayer?: unknown[];
   }
 }
 
@@ -33,6 +35,7 @@ function ensureDataLayer() {
  * @param params - Additional event parameters (optional)
  */
 export function pushToDataLayer(event: string, params?: Record<string, any>) {
+  if (typeof window === 'undefined' || !hasAnalyticsConsent()) return;
   ensureDataLayer();
 
   if (typeof window === 'undefined') {
