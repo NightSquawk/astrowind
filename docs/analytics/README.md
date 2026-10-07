@@ -6,7 +6,7 @@ The shared template uses Datadog Browser SDK 7.15.0. It waits for explicit Terml
 
 Set PUBLIC_DATADOG_APPLICATION_ID and PUBLIC_DATADOG_CLIENT_TOKEN during astro build, plus PUBLIC_TERMLY_CMP_WEBSITE_UUID. Use the browser client token, never a Datadog API key. The default Datadog site is us3.datadoghq.com. Set PUBLIC_DATADOG_SERVICE for each application. PUBLIC_DATADOG_ALLOWED_HOSTS defaults to the canonical site hostname in src/config.yaml. PUBLIC_DATADOG_VERSION defaults to the build git SHA. Wrangler runtime vars do not reach prerendered HTML.
 
-Site forks may pass public defaults through the DatadogRUM config prop and the TermlyCMP websiteUUID prop. Include Termly first in head. A bundled script is same-origin and cannot rely on Termly auto-blocking; the explicit consent bridge is required. Add a `.termly-display-preferences` link to each production footer after configuring a CMP.
+Site forks may pass public defaults through the DatadogRUM config prop and the TermlyCMP websiteUUID prop. Include Termly first in head. A bundled script is same-origin and cannot rely on Termly auto-blocking; the explicit consent bridge is required. The default footer shows Cookie preferences when the CMP is configured. Custom footers should include a `.termly-display-preferences` control; site defaults can enable the standard footer through its consentPreferences prop.
 
 ## Collection and retention
 

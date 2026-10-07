@@ -21,9 +21,17 @@ export interface Props {
   socialLinks: Array<Link>;
   footNote?: string;
   theme?: string;
+  consentPreferences?: boolean;
 }
 
-const { socialLinks = [], secondaryLinks = [], links = [], footNote = '', theme = 'light' } = Astro.props;
+const {
+  socialLinks = [],
+  secondaryLinks = [],
+  links = [],
+  footNote = '',
+  theme = 'light',
+  consentPreferences = Boolean(import.meta.env.PUBLIC_TERMLY_CMP_WEBSITE_UUID),
+} = Astro.props;
 ---
 
 <footer class:list={[{ dark: theme === 'dark' }, 'relative border-t border-gray-200 dark:border-slate-800 not-prose']}>
@@ -50,6 +58,13 @@ const { socialLinks = [], secondaryLinks = [], links = [], footNote = '', theme 
             ))
           }
         </div>
+        {
+          consentPreferences && (
+            <button type="button" class="termly-display-preferences text-sm text-muted hover:underline mt-2">
+              Cookie preferences
+            </button>
+          )
+        }
       </div>
       {
         links.map(({ title, links }) => (
