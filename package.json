@@ -75,7 +75,7 @@
 		"@mux/mux-audio": "^0.15.19",
 		"@mux/mux-node": "^12.8.1",
 		"@mux/mux-player": "^3.10.2",
-		"astro": "^5.12.9",
+		"astro": "^7.2.8",
 		"astro-embed": "^0.14.0",
 		"astro-icon": "^1.2.0",
 		"class-variance-authority": "^0.7.1",
