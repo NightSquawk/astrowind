@@ -65,7 +65,7 @@
 		"start": "astro dev"
 	},
 	"dependencies": {
-		"@astrojs/cloudflare": "^12.6.12",
+		"@astrojs/cloudflare": "^14.3.2",
 		"@astrojs/rss": "^4.0.19",
 		"@astrojs/sitemap": "^3.4.2",
 		"@astrolib/analytics": "^0.6.1",
